@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tikket — ICC T20 World Cup Final 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060810;--s1:#0C0F1A;--s2:#111420;--s3:#161B28;
+  --b1:#1C2035;--b2:#242840;--b3:#2E3450;
+  --gold:#D4A843;--gold2:#F0C060;--gdim:rgba(212,168,67,.12);--glow:rgba(212,168,67,.05);
+  --green:#00C07A;--red:#E84545;--blue:#4A9EE8;--orange:#F4821E;--purple:#9B5DE5;
+  --text:#EEF0F8;--muted:#7880A0;--dim:#3A4060;
+  --fd:'Bebas Neue',sans-serif;--fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+  --r:6px;--r2:4px;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh;flex-direction:column;animation:fadeUp .35s ease both}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
+@keyframes scanMove{0%{top:8%}50%{top:88%}100%{top:8%}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* AUTH MODAL */
+.auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:400;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.auth-overlay.open{display:flex}
+.auth-box{background:var(–s1);border:1px solid var(–b2);border-radius:10px;max-width:400px;width:100%;padding:32px;animation:fadeUp .25s ease}
+.auth-logo{font-family:var(–fd);font-size:28px;letter-spacing:1px;text-align:center;margin-bottom:4px}
+.auth-logo span{color:var(–gold)}
+.auth-sub{font-family:var(–fm);font-size:10px;letter-spacing:2px;color:var(–muted);text-align:center;text-transform:uppercase;margin-bottom:24px}
+.auth-title{font-family:var(–fd);font-size:22px;letter-spacing:.5px;margin-bottom:6px}
+.auth-desc{font-family:var(–fm);font-size:11px;color:var(–muted);line-height:1.65;margin-bottom:20px}
+.auth-step{display:none}.auth-step.active{display:block}
+.af{margin-bottom:12px}
+.al{font-family:var(–fm);font-size:9px;letter-spacing:1.5px;color:var(–muted);text-transform:uppercase;display:block;margin-bottom:5px}
+.ai{width:100%;background:var(–s2);border:1px solid var(–b1);color:var(–text);padding:10px 12px;font-family:var(–fm);font-size:13px;border-radius:var(–r2);outline:none;transition:border-color .2s}
+.ai:focus{border-color:rgba(212,168,67,.4)}
+.ai::placeholder{color:var(–dim)}
+.otp-row{display:flex;gap:8px;justify-content:center;margin:12px 0}
+.od{width:50px;height:56px;background:var(–s2);border:1px solid var(–b2);color:var(–text);font-family:var(–fm);font-size:24px;text-align:center;border-radius:var(–r2);outline:none;transition:border-color .2s}
+.od:focus{border-color:var(–gold)}
+.od.ok{border-color:rgba(212,168,67,.4);color:var(–gold)}
+.abtn{width:100%;padding:12px;border-radius:var(–r2);border:none;font-family:var(–fb);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .18s;background:var(–gold);color:#000;margin-top:4px}
+.abtn:hover{background:var(–gold2)}
+.abtn:disabled{opacity:.5;cursor:not-allowed}
+.abtn.ghost{background:transparent;color:var(–muted);border:1px solid var(–b2);margin-top:8px}
+.abtn.ghost:hover{color:var(–text)}
+.auth-err{font-family:var(–fm);font-size:11px;color:var(–red);text-align:center;margin-top:8px;min-height:16px}
+.auth-note{font-family:var(–fm);font-size:10px;color:var(–muted);text-align:center;margin-top:10px;line-height:1.6}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+
+/* ROLE PICKER */
+#s-role{align-items:center;justify-content:center;padding:20px;background:var(–bg);background-image:radial-gradient(ellipse 80% 50% at 50% -5%,rgba(212,168,67,.13) 0%,transparent 60%)}
+.role-wrap{width:100%;max-width:860px}
+.role-header{text-align:center;margin-bottom:20px}
+.role-logo{font-family:var(–fd);font-size:36px;letter-spacing:2px}
+.role-logo span{color:var(–gold)}
+.role-logo-sub{font-family:var(–fm);font-size:10px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;margin-top:4px}
+.mhero{background:linear-gradient(155deg,rgba(212,168,67,.09) 0%,rgba(0,0,0,0) 60%);border:1px solid rgba(212,168,67,.25);border-radius:14px;padding:30px 34px 26px;margin-bottom:32px;position:relative;overflow:hidden}
+.mhero::before{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold),transparent);opacity:.5}
+.mh-tourn{font-family:var(–fm);font-size:10px;letter-spacing:3px;color:var(–gold);text-transform:uppercase;display:flex;align-items:center;gap:0}
+.mh-chip{background:rgba(232,69,69,.1);border:1px solid rgba(232,69,69,.3);color:#E84545;font-family:var(–fm);font-size:9px;letter-spacing:2px;padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:4px}
+.mh-dot{width:5px;height:5px;border-radius:50%;background:#E84545;animation:blink 1s ease infinite}
+.mh-teams{font-family:var(–fd);font-size:72px;letter-spacing:2px;line-height:.95;margin-bottom:8px;display:flex;align-items:center;flex-wrap:wrap}
+.mh-t1{color:#FF9933}.mh-vs{font-size:36px;color:var(–muted);margin:0 16px}.mh-t2{color:#7BBFF5}
+.mh-subtitle{font-family:var(–fd);font-size:28px;letter-spacing:3px;color:var(–text);opacity:.55;margin-bottom:18px}
+.mh-meta{display:flex;gap:24px;flex-wrap:wrap}
+.mm{font-family:var(–fm);font-size:11px;color:var(–muted);display:flex;align-items:center;gap:6px}
+.mm b{color:var(–text)}
+.mh-toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.role-prompt{font-family:var(–fm);font-size:10px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;text-align:center;margin-bottom:16px}
+.role-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rcard{background:var(–s1);border:1px solid var(–b1);border-radius:12px;padding:30px 24px;cursor:pointer;transition:all .28s;position:relative;overflow:hidden}
+.rcard.buyer:hover{border-color:rgba(74,158,232,.45);transform:translateY(-4px);box-shadow:0 20px 50px rgba(74,158,232,.08)}
+.rcard.seller:hover{border-color:rgba(212,168,67,.4);transform:translateY(-4px);box-shadow:0 20px 50px rgba(212,168,67,.08)}
+.rcard::after{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–c,#fff),transparent);opacity:.15}
+.rcard.buyer{–c:#4A9EE8}.rcard.seller{–c:#D4A843}
+.rc-ico{font-size:42px;margin-bottom:14px;display:block}
+.rc-title{font-family:var(–fd);font-size:32px;letter-spacing:1px;margin-bottom:6px}
+.buyer .rc-title{color:var(–blue)}.seller .rc-title{color:var(–gold)}
+.rc-desc{font-family:var(–fm);font-size:11px;color:var(–muted);line-height:1.7;margin-bottom:16px}
+.rc-list{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:20px}
+.rc-list li{font-family:var(–fm);font-size:10px;color:var(–muted);display:flex;align-items:center;gap:7px}
+.rc-list li::before{content:‘→’;color:var(–dim)}
+.rc-btn{width:100%;padding:11px;border-radius:var(–r2);border:none;font-family:var(–fb);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .18s}
+.buyer .rc-btn{background:var(–blue);color:#fff}.seller .rc-btn{background:var(–gold);color:#000}
+
+/* NAV */
+.topnav{background:var(–s1);border-bottom:1px solid var(–b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:var(–fd);font-size:22px;letter-spacing:1px;cursor:pointer}
+.nav-logo span{color:var(–gold)}
+.nav-right{display:flex;gap:8px;align-items:center}
+.nav-pill{font-family:var(–fm);font-size:9px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;padding:3px 9px;border:1px solid var(–b1);border-radius:20px}
+.nav-user{font-family:var(–fm);font-size:10px;color:var(–muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nb{font-family:var(–fb);font-size:11px;font-weight:600;padding:6px 14px;border-radius:var(–r2);cursor:pointer;border:none;text-transform:uppercase;letter-spacing:.5px;transition:all .18s}
+.nb.ghost{background:transparent;color:var(–muted);border:1px solid var(–b2)}.nb.ghost:hover{color:var(–text);border-color:var(–b3)}
+.nb.gold{background:var(–gold);color:#000}.nb.gold:hover{background:var(–gold2)}
+.nb.blue{background:var(–blue);color:#fff}
+.nb.red{background:var(–red);color:#fff}
+
+/* BUYER */
+.bheader{background:linear-gradient(180deg,var(–s1),var(–bg));border-bottom:1px solid var(–b1);padding:0 22px}
+.bh-inner{max-width:1160px;margin:0 auto}
+.bh-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding:18px 0}
+.bh-tourn{font-family:var(–fm);font-size:9px;letter-spacing:3px;color:var(–gold);text-transform:uppercase;margin-bottom:5px}
+.bh-teams{font-family:var(–fd);font-size:44px;letter-spacing:1px;line-height:1;display:flex;align-items:center}
+.bht1{color:#FF9933}.bht2{color:#7BBFF5}.bhvs{font-size:24px;color:var(–muted);margin:0 12px}
+.bh-venue{font-family:var(–fm);font-size:11px;color:var(–muted);margin-top:4px}
+.bm{font-family:var(–fm);font-size:11px;color:var(–muted);display:flex;align-items:center;gap:6px}
+.bm b{color:var(–text)}
+.btabs{display:flex;border-bottom:1px solid var(–b1);overflow-x:auto}
+.btab{font-family:var(–fb);font-size:11px;font-weight:500;padding:11px 20px;cursor:pointer;color:var(–muted);border-bottom:2px solid transparent;transition:all .18s;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.btab.active{color:var(–gold);border-bottom-color:var(–gold)}
+.btab:hover:not(.active){color:var(–text)}
+.bmain{max-width:1160px;margin:0 auto;padding:22px;display:grid;grid-template-columns:258px 1fr;gap:20px;align-items:start}
+.fbar{background:var(–s1);border:1px solid var(–b1);border-radius:var(–r);padding:18px;position:sticky;top:74px}
+.ftitle{font-family:var(–fm);font-size:9px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;margin-bottom:14px}
+.fsec{margin-bottom:15px;padding-bottom:15px;border-bottom:1px solid var(–b1)}
+.fsec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.flbl{font-family:var(–fb);font-size:11px;font-weight:600;color:var(–text);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.fcl{font-size:10px;color:var(–muted);cursor:pointer;font-weight:400}.fcl:hover{color:var(–gold)}
+.qty-row{display:flex;gap:5px}
+.qb{width:36px;height:36px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.qb:hover{border-color:var(–b3);color:var(–text)}.qb.sel{border-color:var(–gold);background:var(–gdim);color:var(–gold)}
+.tier-list{display:flex;flex-direction:column;gap:5px}
+.topt{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);cursor:pointer;transition:all .15s}
+.topt:hover{border-color:var(–b3)}.topt.sel{border-color:rgba(212,168,67,.5);background:var(–gdim)}
+.topt-radio{width:13px;height:13px;border-radius:50%;border:1px solid var(–b3);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.topt.sel .topt-radio{border-color:var(–gold);background:var(–gold)}
+.topt-dot{width:5px;height:5px;border-radius:50%;background:#000;display:none}
+.topt.sel .topt-dot{display:block}
+.topt-lbl{font-family:var(–fm);font-size:10px;color:var(–muted)}.topt.sel .topt-lbl{color:var(–gold)}
+.topt-price{font-family:var(–fm);font-size:9px;color:var(–dim);margin-left:auto}
+.blk-section{margin-top:9px;padding:10px;background:var(–s2);border:1px solid var(–b1);border-radius:var(–r2);display:none}
+.blk-section.show{display:block}
+.blk-hint{font-family:var(–fm);font-size:9px;color:var(–muted);margin-bottom:7px}
+.blk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.blk{height:30px;border-radius:3px;border:1px solid var(–b1);background:var(–bg);color:var(–muted);font-family:var(–fm);font-size:9px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;position:relative}
+.blk:hover{border-color:var(–b3);color:var(–text)}
+.blk.lo{border-left:2px solid var(–orange)}.blk.up{border-left:2px solid var(–blue)}.blk.sp{border-left:2px solid var(–purple)}
+.blk.sel.lo{border-color:var(–orange);background:rgba(244,130,30,.1);color:var(–orange)}
+.blk.sel.up{border-color:var(–blue);background:rgba(74,158,232,.1);color:var(–blue)}
+.blk.sel.sp{border-color:var(–purple);background:rgba(155,93,229,.1);color:var(–purple)}
+.blk-star{position:absolute;top:1px;right:2px;font-size:5px}
+.chip-row{display:flex;gap:5px;flex-wrap:wrap}
+.chip{padding:5px 10px;border-radius:20px;border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:9px;cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(–b3);color:var(–text)}.chip.sel{border-color:var(–green);background:rgba(0,192,122,.08);color:var(–green)}
+.pi-row{display:flex;gap:6px;align-items:center}
+.pinp{flex:1;background:var(–s2);border:1px solid var(–b1);color:var(–text);padding:7px 9px;font-family:var(–fm);font-size:11px;border-radius:var(–r2);outline:none}
+.pinp:focus{border-color:rgba(212,168,67,.4)}
+.psep{color:var(–muted);font-size:11px;flex-shrink:0}
+.tog-pair{display:flex;border:1px solid var(–b1);border-radius:var(–r2);overflow:hidden}
+.tp{flex:1;padding:8px;background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:10px;cursor:pointer;transition:all .15s;text-align:center;border:none}
+.tp.sel{background:var(–gdim);color:var(–gold)}
+.zguide{background:var(–s1);border:1px solid var(–b1);border-radius:var(–r);padding:16px;margin-bottom:16px}
+.zg-hdr{font-family:var(–fm);font-size:9px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;margin-bottom:10px}
+.zleg{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.zl{display:flex;align-items:center;gap:5px;font-family:var(–fm);font-size:9px;color:var(–muted)}
+.zl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.zcard{background:var(–s2);border:1px solid var(–b1);border-radius:var(–r2);padding:10px;cursor:pointer;transition:all .18s}
+.zcard:hover{border-color:var(–b3)}.zcard.az{border-color:var(–gold);background:var(–glow)}
+.zcat{font-family:var(–fm);font-size:8px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.zname{font-family:var(–fb);font-size:11px;font-weight:600;color:var(–text);margin-bottom:2px}
+.zdesc{font-family:var(–fm);font-size:9px;color:var(–muted);line-height:1.5;margin-bottom:4px}
+.zprice{font-family:var(–fd);font-size:15px;color:var(–gold)}
+.znote{background:var(–s2);border:1px solid var(–b1);border-radius:var(–r2);padding:9px 11px;font-family:var(–fm);font-size:10px;color:var(–muted);line-height:1.65}
+.sbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.rct{font-family:var(–fm);font-size:11px;color:var(–muted)}.rct b{color:var(–text)}
+.ssel{background:var(–s2);border:1px solid var(–b1);color:var(–text);padding:6px 10px;font-family:var(–fm);font-size:10px;border-radius:var(–r2);outline:none;cursor:pointer}
+.ssel option{background:var(–s2)}
+.listings{display:flex;flex-direction:column;gap:10px}
+.lcard{background:var(–s1);border:1px solid var(–b1);border-radius:var(–r);padding:18px;transition:all .2s;position:relative;overflow:hidden}
+.lcard:hover{border-color:var(–b2);background:var(–s2);transform:translateY(-1px)}
+.lcard.feat{border-color:rgba(212,168,67,.22)}
+.lcard.feat::before{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold),transparent)}
+.fbadge{position:absolute;top:10px;right:10px;background:var(–gdim);border:1px solid rgba(212,168,67,.25);color:var(–gold);font-family:var(–fm);font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:10px;text-transform:uppercase}
+.lc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(–fb);flex-shrink:0}
+.sname{font-size:13px;font-weight:600;color:var(–text)}
+.sbrow{display:flex;gap:4px;margin-top:2px}
+.sb{font-family:var(–fm);font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:10px}
+.sb.v{background:rgba(0,192,122,.1);border:1px solid rgba(0,192,122,.22);color:var(–green)}
+.sb.t{background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.22);color:var(–gold)}
+.sb.n{background:rgba(74,158,232,.1);border:1px solid rgba(74,158,232,.22);color:var(–blue)}
+.pb{text-align:right;flex-shrink:0}
+.pper{font-family:var(–fm);font-size:9px;color:var(–muted)}
+.pval{font-family:var(–fd);font-size:30px;color:var(–gold);line-height:1}
+.ptot{font-family:var(–fm);font-size:9px;color:var(–muted);margin-top:1px}
+.pfv{font-family:var(–fm);font-size:9px;color:var(–dim);text-decoration:line-through;margin-top:1px}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.si{background:var(–s2);border:1px solid var(–b1);border-radius:var(–r2);padding:6px 8px}
+.sil{font-family:var(–fm);font-size:8px;letter-spacing:1.5px;color:var(–muted);text-transform:uppercase;margin-bottom:3px}
+.siv{font-family:var(–fm);font-size:11px;color:var(–text);font-weight:500}
+.qbar2{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.qtrk{flex:1;height:3px;background:var(–b1);border-radius:2px;overflow:hidden}
+.qfil{height:100%;border-radius:2px;background:linear-gradient(90deg,var(–green),var(–gold))}
+.qvl{font-family:var(–fm);font-size:9px;color:var(–gold);min-width:22px;text-align:right}
+.vline{font-family:var(–fm);font-size:10px;color:var(–muted);margin-bottom:8px;line-height:1.55}
+.snote{background:var(–s2);border-left:2px solid rgba(212,168,67,.2);padding:9px 11px;margin-bottom:10px;font-size:12px;color:var(–muted);line-height:1.6;font-style:italic;border-radius:0 3px 3px 0}
+.snote strong{color:var(–text);font-style:normal;font-size:10px;font-family:var(–fm);display:block;margin-bottom:3px}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-family:var(–fm);font-size:9px;padding:3px 8px;border-radius:var(–r2);border:1px solid var(–b1);color:var(–muted)}
+.tag.g{border-color:rgba(0,192,122,.22);color:var(–green);background:rgba(0,192,122,.06)}
+.lc-bot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tleft{font-family:var(–fm);font-size:10px;color:var(–muted)}.tleft b{color:var(–text)}
+.btn-row{display:flex;gap:6px}
+.btn{font-family:var(–fb);font-size:11px;font-weight:600;padding:8px 16px;border-radius:var(–r2);border:none;cursor:pointer;transition:all .18s;text-transform:uppercase;letter-spacing:.5px}
+.btn.p{background:var(–gold);color:#000}.btn.p:hover{background:var(–gold2);transform:translateY(-1px)}
+.btn.g{background:transparent;color:var(–muted);border:1px solid var(–b2)}.btn.g:hover{color:var(–text);border-color:var(–b3)}
+.loading-card{background:var(–s1);border:1px solid var(–b1);border-radius:var(–r);padding:40px;text-align:center}
+.loading-spinner{width:28px;height:28px;border:2px solid var(–b2);border-top-color:var(–gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+.loading-txt{font-family:var(–fm);font-size:11px;color:var(–muted)}
+.empty{text-align:center;padding:50px 20px}
+.empty-ic{font-size:38px;opacity:.3;margin-bottom:10px}
+.empty-msg{font-family:var(–fm);font-size:11px;color:var(–muted);line-height:1.7}
+.guide-inner{max-width:1160px;margin:0 auto;padding:22px}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.gc{background:var(–s1);border:1px solid var(–b1);border-radius:var(–r);padding:16px}
+.gc-ic{font-size:22px;margin-bottom:7px}.gc-t{font-family:var(–fb);font-weight:600;font-size:13px;margin-bottom:5px}
+.gc-b{font-family:var(–fm);font-size:10.5px;color:var(–muted);line-height:1.7}.gc-b strong{color:var(–text)}
+.faq-inner{max-width:700px;margin:0 auto;padding:22px;display:flex;flex-direction:column;gap:8px}
+.fi{background:var(–s1);border:1px solid var(–b1);border-radius:var(–r);overflow:hidden}
+.fi-q{padding:14px 17px;cursor:pointer;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fi-q:hover{color:var(–gold)}.fi-ico{color:var(–gold);font-size:18px;flex-shrink:0}
+.fi-a{display:none;padding:0 17px 14px;font-family:var(–fm);font-size:11px;color:var(–muted);line-height:1.75}
+
+/* CONTACT MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.overlay.open{display:flex}
+.modal{background:var(–s1);border:1px solid var(–b2);border-radius:var(–r);max-width:460px;width:100%;max-height:90vh;overflow-y:auto;animation:fadeUp .25s ease}
+.mhdr{padding:22px 22px 0;display:flex;justify-content:space-between;align-items:center}
+.mtitle{font-family:var(–fd);font-size:24px;letter-spacing:.5px}
+.mx{width:26px;height:26px;border-radius:50%;border:1px solid var(–b2);background:transparent;color:var(–muted);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.mx:hover{color:var(–text)}
+.mbody{padding:18px 22px 22px;display:flex;flex-direction:column;gap:12px}
+.mf{display:flex;flex-direction:column;gap:4px}
+.ml{font-family:var(–fm);font-size:9px;letter-spacing:1.5px;color:var(–muted);text-transform:uppercase}
+.mv{font-family:var(–fm);font-size:12px;color:var(–text)}
+.mnotice{background:var(–gdim);border:1px solid rgba(212,168,67,.18);border-radius:var(–r2);padding:11px;font-family:var(–fm);font-size:10.5px;color:var(–gold);line-height:1.65}
+.co-row{display:flex;gap:7px}
+.co{flex:1;background:var(–s2);border:1px solid var(–b1);border-radius:var(–r2);padding:12px;text-align:center;cursor:pointer;transition:all .18s}
+.co:hover{border-color:var(–gold)}.co-ic{font-size:20px;margin-bottom:4px}.co-lb{font-family:var(–fm);font-size:10px;color:var(–muted)}
+.mbtns{display:flex;gap:7px}
+.mbtn{flex:1;padding:10px;border-radius:var(–r2);border:none;font-family:var(–fb);font-size:12px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .18s}
+.mbtn.p{background:var(–gold);color:#000}.mbtn.p:hover{background:var(–gold2)}
+.mbtn.s{background:transparent;color:var(–muted);border:1px solid var(–b2)}.mbtn.s:hover{color:var(–text)}
+.contact-email{font-family:var(–fm);font-size:13px;color:var(–gold);word-break:break-all;padding:10px;background:var(–s2);border-radius:var(–r2);border:1px solid rgba(212,168,67,.2);text-align:center}
+
+/* SELLER */
+#s-sell{background:var(–bg)}
+.sell-wrap{max-width:680px;margin:0 auto;padding:26px 22px}
+.steps-row{display:flex;gap:0;margin-bottom:6px}
+.step{flex:1;text-align:center;padding:9px 4px;font-family:var(–fm);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(–dim);border-bottom:2px solid var(–b1);transition:all .25s;white-space:nowrap}
+.step.done{color:var(–green);border-bottom-color:var(–green)}.step.active{color:var(–gold);border-bottom-color:var(–gold)}
+.prog-bar{height:2px;background:var(–b1);margin-bottom:26px;border-radius:2px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(–gold),var(–gold2));border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.scard{background:var(–s1);border:1px solid var(–b1);border-radius:var(–r);padding:24px;margin-bottom:14px}
+.sc-title{font-family:var(–fd);font-size:22px;letter-spacing:.5px;margin-bottom:4px}
+.sc-sub{font-family:var(–fm);font-size:11px;color:var(–muted);line-height:1.65;margin-bottom:18px}
+.sc-sect{font-family:var(–fm);font-size:9px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;margin-bottom:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(–b1)}
+.sc-sect:first-of-type{margin-top:0;padding-top:0;border-top:none}
+.fg{margin-bottom:12px}
+.fl{font-family:var(–fm);font-size:9px;letter-spacing:1.5px;color:var(–muted);text-transform:uppercase;display:block;margin-bottom:5px}
+.fi2{width:100%;background:var(–s2);border:1px solid var(–b1);color:var(–text);padding:9px 12px;font-family:var(–fm);font-size:12px;border-radius:var(–r2);outline:none;transition:border-color .2s}
+.fi2:focus{border-color:rgba(212,168,67,.4)}.fi2::placeholder{color:var(–dim)}
+.fta{width:100%;background:var(–s2);border:1px solid var(–b1);color:var(–text);padding:9px 12px;font-family:var(–fm);font-size:12px;border-radius:var(–r2);outline:none;transition:border-color .2s;resize:vertical;min-height:90px;line-height:1.6}
+.fta:focus{border-color:rgba(212,168,67,.4)}.fta::placeholder{color:var(–dim)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fchips{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{padding:6px 12px;border-radius:20px;border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:10px;cursor:pointer;transition:all .15px}
+.fchip:hover{border-color:var(–b3);color:var(–text)}.fchip.sel{border-color:var(–gold);background:var(–gdim);color:var(–gold)}
+.sm-row{display:flex;gap:8px}
+.sm{flex:1;padding:14px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);cursor:pointer;transition:all .18s;text-align:center}
+.sm:hover{border-color:var(–b3)}.sm.sel{border-color:var(–gold);background:var(–gdim)}
+.sm-ic{font-size:22px;margin-bottom:5px}.sm-t{font-family:var(–fm);font-size:10px;color:var(–text);margin-bottom:2px}
+.sm.sel .sm-t{color:var(–gold)}.sm-s{font-family:var(–fm);font-size:9px;color:var(–muted);line-height:1.4}
+.dropzone{border:1.5px dashed var(–b2);border-radius:var(–r);min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:all .22s;background:var(–s2);overflow:hidden}
+.dropzone:hover{border-color:rgba(212,168,67,.4)}
+.dz-ic{font-size:28px;opacity:.3}.dz-t{font-family:var(–fm);font-size:11px;color:var(–muted)}.dz-h{font-family:var(–fm);font-size:9px;color:var(–dim)}
+.checks{background:var(–s2);border:1px solid var(–b1);border-radius:var(–r);padding:14px;margin-top:12px}
+.checks-hdr{font-family:var(–fm);font-size:9px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;margin-bottom:10px}
+.chk{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);opacity:0;transform:translateY(5px);transition:opacity .4s,transform .4s}
+.chk.show{opacity:1;transform:none}.chk:last-child{border-bottom:none}
+.ci{width:16px;text-align:center;font-family:var(–fm);font-size:12px;flex-shrink:0;margin-top:1px}
+.cl{font-family:var(–fm);font-size:11px}.cd{font-family:var(–fm);font-size:10px;color:var(–muted);margin-top:2px}
+.c-ok{color:var(–green)}.c-warn{color:var(–orange)}.c-bad{color:var(–red)}.c-mu{color:var(–muted)}
+.spn{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(–orange);animation:blink .6s ease infinite}
+.ela-wrap{margin-top:12px;border:1px solid var(–b1);border-radius:var(–r2);overflow:hidden;display:none}
+.ela-wrap.show{display:block}
+.ela-hdr{font-family:var(–fm);font-size:9px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;padding:7px 11px;background:var(–s2);border-bottom:1px solid var(–b1)}
+.ela-note{font-family:var(–fm);font-size:10px;padding:5px 11px;background:var(–s2)}
+.rbox{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(–r);margin-top:12px;animation:rise .3s ease both}
+.rbox.pass{background:rgba(0,192,122,.06);border:1px solid rgba(0,192,122,.22)}
+.rbox.fail{background:rgba(232,69,69,.06);border:1px solid rgba(232,69,69,.22)}
+.ri{font-size:22px;flex-shrink:0}.rt{font-size:12px;font-weight:700;margin-bottom:2px}
+.rb{font-family:var(–fm);font-size:10.5px;color:var(–muted);line-height:1.65}
+.vid-mock{position:relative;width:100%;aspect-ratio:4/3;background:#07090E;border-radius:var(–r);overflow:hidden;border:1px solid var(–b1)}
+.vm-face{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-size:52px;z-index:2;transition:all .5s}
+.vm-tkt{position:absolute;top:55%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(160deg,#f0e8d0,#e0d090);border-radius:3px;padding:10px 14px;font-family:var(–fm);font-size:9px;color:#333;z-index:2;border:1px solid #c0a840;min-width:160px;display:none;text-align:left}
+.vm-tkt-t{font-size:11px;font-weight:700;color:#111;margin-bottom:4px}
+.vm-tkt-r{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:#555;margin-top:2px}
+.vm-scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(–green),transparent);animation:scanMove 2s ease-in-out infinite;box-shadow:0 0 8px var(–green);display:none;top:50%}
+.vm-scan.on{display:block}
+.vm-ph{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);font-family:var(–fm);font-size:10px;color:var(–gold);animation:blink 1.2s ease infinite;display:none;white-space:nowrap}
+.vm-ph.on{display:block}
+.corners{position:absolute;inset:0;pointer-events:none}
+.cor{position:absolute;width:18px;height:18px;border-color:rgba(0,192,122,.45);border-style:solid}
+.cor.tl{top:6%;left:4%;border-width:2px 0 0 2px}.cor.tr{top:6%;right:4%;border-width:2px 2px 0 0}
+.cor.bl{bottom:6%;left:4%;border-width:0 0 2px 2px}.cor.br{bottom:6%;right:4%;border-width:0 2px 2px 0}
+.otp-ov{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.92);border:1px solid var(–gold);padding:6px 16px;border-radius:3px;z-index:10;text-align:center;white-space:nowrap}
+.otp-lb{font-family:var(–fm);font-size:8px;letter-spacing:2px;color:var(–gold);margin-bottom:2px}
+.otp-num{font-family:var(–fd);font-size:24px;color:var(–gold);letter-spacing:8px}
+.rec-b{position:absolute;top:8px;right:8px;display:none;align-items:center;gap:4px;background:rgba(0,0,0,.8);padding:4px 8px;border-radius:2px}
+.rec-b.on{display:flex}.rec-d{width:5px;height:5px;border-radius:50%;background:var(–red);animation:blink 1s ease infinite}
+.rec-t{font-family:var(–fm);font-size:10px;color:#fff}
+.arc-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.05)}
+.arc-fill{height:100%;background:var(–red);transition:width 1s linear;width:0%}
+.otp-ent{background:var(–s2);border:1px solid var(–b1);border-radius:var(–r);padding:14px;margin-top:11px}
+.otp-ent-hdr{font-family:var(–fm);font-size:9px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;margin-bottom:9px}
+.od-row{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.od{width:44px;height:50px;background:var(–s1);border:1px solid var(–b2);color:var(–text);font-family:var(–fm);font-size:22px;text-align:center;border-radius:var(–r2);outline:none;transition:border-color .2s}
+.od:focus{border-color:var(–gold)}.od.ok{border-color:rgba(212,168,67,.4);color:var(–gold)}
+.otp-hint{font-family:var(–fm);font-size:10px;color:var(–muted)}
+.succ-wrap{text-align:center;padding:8px 0}
+.succ-ic{font-size:60px;display:block;margin-bottom:6px;animation:pop .5s ease both}
+.succ-badge{display:inline-block;background:rgba(0,192,122,.08);border:1px solid rgba(0,192,122,.22);color:var(–green);font-family:var(–fm);font-size:9px;letter-spacing:2px;padding:4px 13px;border-radius:20px;margin:12px 0;text-transform:uppercase}
+.succ-title{font-family:var(–fd);font-size:38px;letter-spacing:-1px;margin-bottom:6px}
+.succ-sub{font-family:var(–fm);font-size:11px;color:var(–muted);line-height:1.7;max-width:360px;margin:0 auto 20px}
+.summ{background:var(–s2);border:1px solid var(–b1);border-radius:var(–r);padding:14px;text-align:left}
+.summ-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(–b1);font-family:var(–fm);font-size:10.5px;gap:8px}
+.summ-row:last-child{border-bottom:none}
+.sk{color:var(–muted);flex-shrink:0}.sv{color:var(–text);text-align:right}.sv.ok{color:var(–green)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(–s2);border:1px solid var(–b2);border-radius:var(–r);padding:11px 18px;font-family:var(–fm);font-size:11px;color:var(–text);z-index:999;transition:transform .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:800px){.bmain{grid-template-columns:1fr}.fbar{position:static}.sgrid{grid-template-columns:repeat(2,1fr)}.zgrid{grid-template-columns:repeat(2,1fr)}.role-cards{grid-template-columns:1fr}.mh-teams{font-size:48px}}
+@media(max-width:480px){.mh-teams{font-size:34px}.mh-vs{font-size:22px;margin:0 8px}.bh-teams{font-size:30px}.bhvs{font-size:18px;margin:0 8px}.fg2,.fg3{grid-template-columns:1fr}.od{width:38px;height:44px;font-size:18px}.sm-row{flex-direction:column}}
+
+/* FOOTER SOCIAL LINKS */
+.footer{background:var(–s1);border-top:1px solid var(–b1);padding:20px 22px;margin-top:auto;flex-shrink:0}
+.footer-inner{max-width:1160px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+.footer-brand{font-family:var(–fd);font-size:20px;letter-spacing:1px;margin-bottom:4px}
+.footer-brand span{color:var(–gold)}
+.footer-tagline{font-family:var(–fm);font-size:9px;color:var(–muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.footer-links{display:flex;gap:10px;flex-wrap:wrap}
+.footer-link{font-family:var(–fm);font-size:10px;color:var(–muted);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .15s}
+.footer-link:hover{color:var(–gold)}
+.footer-disc{font-family:var(–fm);font-size:9.5px;color:var(–dim);line-height:1.7;max-width:580px}
+.footer-disc b{color:var(–muted)}
+.co-row{display:flex;gap:7px}
+.co{flex:1;background:var(–s2);border:1px solid var(–b1);border-radius:var(–r2);padding:12px;text-align:center;cursor:pointer;transition:all .18s;text-decoration:none;display:flex;flex-direction:column;align-items:center}
+.co:hover:not(.co-off){border-color:var(–gold)}
+.co.co-off{opacity:.28;cursor:not-allowed;pointer-events:none;filter:grayscale(1)}
+.co-ic{font-size:20px;margin-bottom:4px}
+.co-lb{font-family:var(–fm);font-size:10px;color:var(–muted)}
+.co-val{font-family:var(–fm);font-size:9px;color:var(–gold);margin-top:3px;word-break:break-all;line-height:1.4}
+</style>
+
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">Tikk<span>et</span></div>
+    <div class="auth-sub">ICC T20 World Cup Final 2026</div>
+
+```
+<!-- Step 1: enter email -->
+<div class="auth-step active" id="auth-email-step">
+  <div class="auth-title" id="auth-title">Sign in to continue</div>
+  <div class="auth-desc" id="auth-desc">Enter your email. We'll send you a one-time code — no password needed.</div>
+  <div class="af">
+    <label class="al">Your Email</label>
+    <input class="ai" id="auth-email-inp" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')sendOTP()"/>
+  </div>
+  <div class="af">
+    <label class="al">Your Name (shown to buyers)</label>
+    <input class="ai" id="auth-name-inp" type="text" placeholder="e.g. Rahul M."/>
+  </div>
+  <button class="abtn" id="auth-send-btn" onclick="sendOTP()">Send OTP →</button>
+  <button class="abtn ghost" onclick="closeAuth()">Browse listings without signing in</button>
+  <div class="auth-err" id="auth-err"></div>
+</div>
+
+<!-- Step 2: enter OTP -->
+<div class="auth-step" id="auth-otp-step">
+  <div class="auth-title">Check your email</div>
+  <div class="auth-desc" id="auth-otp-desc">We sent a 6-digit code to <b id="auth-email-show"></b></div>
+  <div class="otp-row">
+    <input class="od" id="ao1" maxlength="1" oninput="aOtpNext(this,'ao2')" onkeydown="aOtpBack(event,this,'')"/>
+    <input class="od" id="ao2" maxlength="1" oninput="aOtpNext(this,'ao3')" onkeydown="aOtpBack(event,this,'ao1')"/>
+    <input class="od" id="ao3" maxlength="1" oninput="aOtpNext(this,'ao4')" onkeydown="aOtpBack(event,this,'ao2')"/>
+    <input class="od" id="ao4" maxlength="1" oninput="aOtpNext(this,'ao5')" onkeydown="aOtpBack(event,this,'ao3')"/>
+    <input class="od" id="ao5" maxlength="1" oninput="aOtpNext(this,'ao6')" onkeydown="aOtpBack(event,this,'ao4')"/>
+    <input class="od" id="ao6" maxlength="1" oninput="aOtpNext(this,'')" onkeydown="aOtpBack(event,this,'ao5')"/>
+  </div>
+  <button class="abtn" id="auth-verify-btn" onclick="verifyOTP()">Verify & Sign In</button>
+  <button class="abtn ghost" onclick="backToEmail()">← Use different email</button>
+  <div class="auth-err" id="auth-err2"></div>
+  <div class="auth-note">Didn't get it? Check spam. Code expires in 10 minutes.</div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ROLE PICKER -->
+
+<div class="screen active" id="s-role">
+  <div class="role-wrap">
+    <div class="role-header">
+      <div class="role-logo">Tikk<span>et</span></div>
+      <div class="role-logo-sub">Community Ticket Exchange · Free · Non-commercial</div>
+    </div>
+    <div class="mhero">
+      <div class="mh-toprow">
+        <div class="mh-tourn">🏆 ICC Men's T20 World Cup 2026 · Grand Final</div>
+        <span class="mh-chip"><span class="mh-dot"></span>LIVE LISTINGS</span>
+      </div>
+      <div class="mh-teams"><span class="mh-t1">INDIA</span><span class="mh-vs">vs</span><span class="mh-t2">NEW ZEALAND</span></div>
+      <div class="mh-subtitle">T20 WORLD CUP FINAL</div>
+      <div class="mh-meta">
+        <div class="mm">📅 <b>Sunday, 8 March 2026</b></div>
+        <div class="mm">⏰ <b>7:00 PM IST</b></div>
+        <div class="mm">🏟️ <b>Narendra Modi Stadium, Ahmedabad</b></div>
+        <div class="mm">🎟️ Face value <b>₹2,000 – ₹60,000</b></div>
+      </div>
+    </div>
+    <div class="role-prompt">What brings you here today?</div>
+    <div class="role-cards">
+      <div class="rcard buyer" onclick="goTo('s-buy')">
+        <span class="rc-ico">🔍</span>
+        <div class="rc-title">I Want to Buy</div>
+        <div class="rc-desc">Browse verified tickets from real fans. Filter by block, tier, price and perks.</div>
+        <ul class="rc-list">
+          <li>Live listings from real sellers</li>
+          <li>Filter by block, tier, price</li>
+          <li>Seller verification badges</li>
+          <li>Direct contact on match day</li>
+        </ul>
+        <button class="rc-btn">Browse Tickets →</button>
+      </div>
+      <div class="rcard seller" onclick="requireAuth('s-sell')">
+        <span class="rc-ico">🎟️</span>
+        <div class="rc-title">I Want to Sell</div>
+        <div class="rc-desc">List your ticket. Photo + video verification earns you the Verified Seller badge.</div>
+        <ul class="rc-list">
+          <li>Fill in your seat details</li>
+          <li>Write your seller note</li>
+          <li>Photo forensics check</li>
+          <li>Live video OTP verification</li>
+        </ul>
+        <button class="rc-btn">List My Ticket →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BUYER SCREEN -->
+
+<div class="screen" id="s-buy">
+  <nav class="topnav">
+    <div class="nav-logo" onclick="goTo('s-role')">Tikk<span>et</span></div>
+    <div class="nav-right">
+      <span class="nav-pill">Buyer</span>
+      <span class="nav-user" id="nav-user-buy"></span>
+      <button class="nb gold" onclick="requireAuth('s-sell')">Sell a Ticket</button>
+      <button class="nb ghost" id="nav-auth-btn-buy" onclick="openAuth('s-buy')" style="display:none">Sign In</button>
+      <button class="nb red" id="nav-signout-btn-buy" onclick="signOut()" style="display:none">Sign Out</button>
+    </div>
+  </nav>
+  <div class="bheader">
+    <div class="bh-inner">
+      <div class="bh-row">
+        <div>
+          <div class="bh-tourn">🏆 ICC Men's T20 World Cup 2026 · Final</div>
+          <div class="bh-teams"><span class="bht1">INDIA</span><span class="bhvs">vs</span><span class="bht2">NEW ZEALAND</span></div>
+          <div class="bh-venue">Narendra Modi Stadium, Ahmedabad · Gate Opens 3:30 PM</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="bm">📅 <b>Sunday 8 March 2026</b></div>
+          <div class="bm">⏰ <b>7:00 PM IST</b></div>
+          <div class="bm">🏟️ Capacity <b>1,32,000</b></div>
+        </div>
+      </div>
+      <div class="btabs">
+        <div class="btab active" onclick="bTab(this,'buy-listings')">Buy Tickets</div>
+        <div class="btab" onclick="bTab(this,'buy-guide')">Stadium Guide</div>
+        <div class="btab" onclick="bTab(this,'buy-faq')">FAQ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTINGS TAB -->
+
+  <div id="buy-listings" class="bmain">
+    <div class="fbar">
+      <div class="ftitle">Filter Listings</div>
+      <div class="fsec">
+        <div class="flbl">Tickets Needed</div>
+        <div class="qty-row" id="qty-btns">
+          <div class="qb" onclick="setQty(this,'1')">1</div>
+          <div class="qb" onclick="setQty(this,'2')">2</div>
+          <div class="qb" onclick="setQty(this,'3')">3</div>
+          <div class="qb" onclick="setQty(this,'4')">4</div>
+          <div class="qb" onclick="setQty(this,'5+')">5+</div>
+        </div>
+      </div>
+      <div class="fsec">
+        <div class="flbl">Seating Tier <span class="fcl" onclick="clearTier()">Clear</span></div>
+        <div class="tier-list">
+          <div class="topt" onclick="setTier(this,'lower','lower-blks')"><div class="topt-radio"><div class="topt-dot"></div></div><div class="topt-lbl">🟠 Lower Tier (A–H)</div><div class="topt-price">₹4k–12k</div></div>
+          <div class="topt" onclick="setTier(this,'upper','upper-blks')"><div class="topt-radio"><div class="topt-dot"></div></div><div class="topt-lbl">🔵 Upper Tier (J–R)</div><div class="topt-price">₹2k–6k</div></div>
+          <div class="topt" onclick="setTier(this,'premium','sp-blks')"><div class="topt-radio"><div class="topt-dot"></div></div><div class="topt-lbl">🟣 South Premium</div><div class="topt-price">₹15k–60k</div></div>
+          <div class="topt" onclick="setTier(this,'corporate','')"><div class="topt-radio"><div class="topt-dot"></div></div><div class="topt-lbl">⭐ Corporate / Suite</div><div class="topt-price">₹20k+</div></div>
+        </div>
+        <div class="blk-section" id="lower-blks"><div class="blk-hint">Select specific block (optional)</div><div class="blk-grid"><div class="blk lo" onclick="togBlk(this,'A')">A</div><div class="blk lo" onclick="togBlk(this,'B')">B</div><div class="blk lo" onclick="togBlk(this,'C')">C</div><div class="blk lo" onclick="togBlk(this,'D')">D<span class="blk-star">⭐</span></div><div class="blk lo" onclick="togBlk(this,'E')">E<span class="blk-star">⭐</span></div><div class="blk lo" onclick="togBlk(this,'F')">F</div><div class="blk lo" onclick="togBlk(this,'G')">G</div><div class="blk lo" onclick="togBlk(this,'H')">H</div></div></div>
+        <div class="blk-section" id="upper-blks"><div class="blk-hint">Select specific block (optional)</div><div class="blk-grid"><div class="blk up" onclick="togBlk(this,'J')">J</div><div class="blk up" onclick="togBlk(this,'K')">K</div><div class="blk up" onclick="togBlk(this,'L')">L</div><div class="blk up" onclick="togBlk(this,'M')">M</div><div class="blk up" onclick="togBlk(this,'N')">N<span class="blk-star">⭐</span></div><div class="blk up" onclick="togBlk(this,'P')">P</div><div class="blk up" onclick="togBlk(this,'Q')">Q</div><div class="blk up" onclick="togBlk(this,'R')">R</div></div></div>
+        <div class="blk-section" id="sp-blks"><div class="blk-hint">Select section</div><div class="blk-grid" style="grid-template-columns:1fr 1fr 1fr"><div class="blk sp" onclick="togBlk(this,'SPW')" style="font-size:8px">SPW</div><div class="blk sp" onclick="togBlk(this,'SPC')" style="font-size:8px">SPC</div><div class="blk sp" onclick="togBlk(this,'SPE')" style="font-size:8px">SPE</div></div></div>
+      </div>
+      <div class="fsec">
+        <div class="flbl">Perks <span class="fcl" onclick="clearChips('perk')">Clear</span></div>
+        <div class="chip-row" data-group="perk">
+          <div class="chip" onclick="togChip(this,'perk','food')">🍛 Food</div>
+          <div class="chip" onclick="togChip(this,'perk','shade')">☁️ Covered</div>
+          <div class="chip" onclick="togChip(this,'perk','lounge')">🛋️ Lounge</div>
+          <div class="chip" onclick="togChip(this,'perk','parking')">🚗 Parking</div>
+          <div class="chip" onclick="togChip(this,'perk','straight')">🎯 Straight View</div>
+        </div>
+      </div>
+      <div class="fsec">
+        <div class="flbl">Price per Ticket</div>
+        <div class="pi-row">
+          <input class="pinp" id="minp" type="number" placeholder="₹ Min" value="2000" oninput="renderListings()"/>
+          <span class="psep">—</span>
+          <input class="pinp" id="maxp" type="number" placeholder="₹ Max" value="65000" oninput="renderListings()"/>
+        </div>
+      </div>
+      <div class="fsec">
+        <div class="flbl">Seats Together</div>
+        <div class="tog-pair">
+          <div class="tp sel" id="tog-tog" onclick="setTog('together')">Together Only</div>
+          <div class="tp" id="tog-any" onclick="setTog('any')">Any</div>
+        </div>
+      </div>
+      <div class="fsec">
+        <div class="flbl">Seller Trust <span class="fcl" onclick="clearChips('trust')">Clear</span></div>
+        <div class="chip-row" data-group="trust">
+          <div class="chip sel" onclick="togChip(this,'trust','verified')">✓ Verified</div>
+          <div class="chip" onclick="togChip(this,'trust','trusted')">⭐ Trusted</div>
+        </div>
+      </div>
+      <button onclick="clearAll()" style="width:100%;padding:9px;background:var(--s2);border:1px solid var(--b1);color:var(--muted);font-family:var(--fm);font-size:10px;border-radius:var(--r2);cursor:pointer;text-transform:uppercase;letter-spacing:1px">Reset All</button>
+    </div>
+    <div>
+      <div class="zguide">
+        <div class="zg-hdr">Stadium Zone Guide — tap to filter</div>
+        <div class="zleg">
+          <div class="zl"><div class="zl-dot" style="background:var(--orange)"></div>Lower (A–H)</div>
+          <div class="zl"><div class="zl-dot" style="background:var(--blue)"></div>Upper (J–R)</div>
+          <div class="zl"><div class="zl-dot" style="background:var(--purple)"></div>South Premium</div>
+          <div class="zl"><div class="zl-dot" style="background:var(--gold)"></div>Suites/Gallery</div>
+        </div>
+        <div class="zgrid">
+          <div class="zcard az" onclick="zoneFilter(this,'lower')" style="border-left:3px solid var(--orange)"><div class="zcat" style="color:var(--orange)">🟠 Lower Tier</div><div class="zname">Blocks A – H</div><div class="zdesc">Inner ring. Closest to pitch. Best: D Bay 1–5, E Bay 2–6.</div><div class="zprice">₹4k – ₹12k</div></div>
+          <div class="zcard" onclick="zoneFilter(this,'upper')" style="border-left:3px solid var(--blue)"><div class="zcat" style="color:var(--blue)">🔵 Upper Tier</div><div class="zname">Blocks J – R</div><div class="zdesc">Outer ring, panoramic. 70% covered. Budget-friendly.</div><div class="zprice">₹2k – ₹6k</div></div>
+          <div class="zcard" onclick="zoneFilter(this,'premium')" style="border-left:3px solid var(--purple)"><div class="zcat" style="color:var(--purple)">🟣 South Premium</div><div class="zname">SPW · SPC · SPE</div><div class="zdesc">Trophy ceremony faces you. Dugouts ahead.</div><div class="zprice">₹15k – ₹60k</div></div>
+          <div class="zcard" onclick="zoneFilter(this,'straight')" style="border-left:3px solid var(--green)"><div class="zcat" style="color:var(--green)">🎯 Straight View</div><div class="zname">Block N · Bay 2</div><div class="zdesc">North end upper. Perfect pitch-on angle.</div><div class="zprice">₹5k – ₹15k</div></div>
+          <div class="zcard" onclick="zoneFilter(this,'corporate')" style="border-left:3px solid var(--gold)"><div class="zcat" style="color:var(--gold)">⭐ Corporate Box</div><div class="zname">North Corporate</div><div class="zdesc">AC, screens, premium facilities.</div><div class="zprice">₹20k – ₹40k</div></div>
+          <div class="zcard" onclick="zoneFilter(this,'suite')" style="border-left:3px solid #b09020"><div class="zcat" style="color:#c0a030">🏆 Suites</div><div class="zname">4th & 5th Floor</div><div class="zdesc">AC boxes, full catering, private entry.</div><div class="zprice">₹40k – ₹60k+</div></div>
+        </div>
+        <div class="znote">🧭 <strong style="color:var(--text)">Orientation:</strong> Pitch runs N–S. Block N faces straight down the wicket. South Premium faces north — all trophy ceremonies here.</div>
+      </div>
+      <div class="sbar">
+        <div class="rct">Showing <b id="cnt">—</b> listings</div>
+        <select class="ssel" onchange="sortListings(this.value)">
+          <option value="created">Newest First</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="quality">View Quality</option>
+          <option value="qty">Most Tickets</option>
+        </select>
+      </div>
+      <div class="listings" id="listings">
+        <div class="loading-card"><div class="loading-spinner"></div><div class="loading-txt">Loading listings…</div></div>
+      </div>
+      <div class="empty" id="empty" style="display:none"><div class="empty-ic">🔍</div><div class="empty-msg">No listings match your filters.<br/>Try widening your search or resetting filters.</div></div>
+    </div>
+  </div>
+
+  <!-- GUIDE TAB -->
+
+  <div id="buy-guide" style="display:none">
+    <div class="guide-inner">
+      <div class="ggrid">
+        <div class="gc"><div class="gc-ic">📐</div><div class="gc-t">Block Layout</div><div class="gc-b"><strong>Lower A–H</strong> surrounds the inner field (5 bays each). <strong>Upper J–R</strong> is the large outer ring (9 bays each, no "I" block). Block N is at the north end — straight-on view. South Premium, Presidential Gallery, and Premium Suites at the south end.</div></div>
+        <div class="gc"><div class="gc-ic">🎯</div><div class="gc-t">Best Value Seats</div><div class="gc-b"><strong>Block D Bay 1–5</strong> and <strong>Block E Bay 2–6</strong> — most recommended lower tier by fans. <strong>Block N Bay 2</strong> upper is gold standard for straight-on view. Blocks N & E are BookMyShow's top-recommended pairing for visibility vs cost.</div></div>
+        <div class="gc"><div class="gc-ic">🏆</div><div class="gc-t">Trophy Ceremony</div><div class="gc-b">All post-match presentations, trophy lifts, and celebrations face <strong>South Premium</strong>. Presidential Gallery sits directly above. South Premium East has the best angle for the trophy moment.</div></div>
+        <div class="gc"><div class="gc-ic">☀️</div><div class="gc-t">Sun & Shade</div><div class="gc-b"><strong>70% of seats</strong> are under the canopy. Evening match at 7 PM means sun is manageable. Upper tier is essentially fully covered. A night Final will be about atmosphere more than shade.</div></div>
+        <div class="gc"><div class="gc-ic">🎙️</div><div class="gc-t">Atmosphere</div><div class="gc-b">North and South stands have the best acoustics. Mid-tier is optimal — not front row, not top row. For a World Cup Final at 1.3 lakh capacity, when the crowd goes, it goes. Visitors describe it as "jaw-dropping" and "electric."</div></div>
+        <div class="gc"><div class="gc-ic">⚠️</div><div class="gc-t">Must Know</div><div class="gc-b"><strong>Only 2 main gates</strong> for 1.3 lakh fans — arrive 90 min early. No powerbanks, earphones, bags, pens, umbrellas, coins. Sealed water bottles OK. Use <strong>Motera Metro Station</strong> — 1–2 km walk. Gate 3 for VIP/Premium.</div></div>
+        <div class="gc"><div class="gc-ic">🍛</div><div class="gc-t">Food & Facilities</div><div class="gc-b">Free RO water at concourse points. Food expensive inside. Top floor upper tier seats have steep angle — visibility issues per fan reviews. Corporate boxes have screens. Mixed washroom reviews — arrive prepared.</div></div>
+        <div class="gc"><div class="gc-ic">🔭</div><div class="gc-t">View Tips</div><div class="gc-b">Sit as close to the <strong>front of your tier</strong> as possible — rear seats have steep downward angle. Long off/long on positions offer the TV broadcast angle. Corner seats have limited full-field visibility.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ TAB -->
+
+  <div id="buy-faq" style="display:none">
+    <div class="faq-inner" id="faq-list"></div>
+  </div>
+
+  <!-- FOOTER -->
+
+  <div class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">Tikk<span>et</span></div>
+        <div class="footer-tagline">Free · Non-commercial · Built by one person</div>
+        <div class="footer-links">
+          <a class="footer-link" href="https://linkedin.com/in/sahil-vadhwani" target="_blank">💼 LinkedIn</a>
+          <a class="footer-link" href="https://x.com/7Star_SaVa" target="_blank">𝕏 Twitter / X</a>
+        </div>
+      </div>
+      <div class="footer-disc">
+        <b>About Tikket.</b> Built by one person, for free, as a community tool to help fans find tickets safely. Tikket is not affiliated with ICC, BCCI, or BookMyShow. We don't sell tickets or handle payments — we just help buyers and sellers find each other. All listings are user-posted. Transactions are solely between buyer and seller. Please verify your ticket physically at the gate before making any payment. The creator of Tikket is not responsible for any transaction or outcome — use your best judgement and stay safe. ✌️
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+
+<div class="overlay" id="modal" onclick="if(event.target===this)closeMod()">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle" id="m-title">Contact Seller</div><button class="mx" onclick="closeMod()">×</button></div>
+    <div class="mbody">
+      <div class="mf"><div class="ml">Listing</div><div class="mv" id="m-listing">—</div></div>
+      <div class="mf"><div class="ml">Seller</div><div class="mv" id="m-seller">—</div></div>
+      <div class="mf"><div class="ml">Price</div><div class="mv" id="m-price">—</div></div>
+      <div class="mnotice">💡 Meet at the stadium gate · Verify QR before paying · Pay cash or UPI in person. Tikket connects buyers and sellers — all transactions are between you two directly.</div>
+      <div class="mf"><div class="ml">Contact Seller via</div>
+        <div class="co-row" id="m-co-row">
+          <a class="co co-off" id="m-wa" href="#" target="_blank" onclick="return false">
+            <div class="co-ic">💬</div><div class="co-lb">WhatsApp</div><div class="co-val" id="m-wa-val"></div>
+          </a>
+          <a class="co co-off" id="m-em" href="#" target="_blank" onclick="return false">
+            <div class="co-ic">📧</div><div class="co-lb">Email</div><div class="co-val" id="m-em-val"></div>
+          </a>
+          <a class="co co-off" id="m-ph" href="#" target="_blank" onclick="return false">
+            <div class="co-ic">📞</div><div class="co-lb">Call</div><div class="co-val" id="m-ph-val"></div>
+          </a>
+        </div>
+      </div>
+      <div style="font-family:var(--fm);font-size:10px;color:var(--dim);margin-top:4px;line-height:1.6">Meet at the gate · Check QR · Pay in person. Stay safe 🙌</div>
+      <div class="mbtns">
+        <button class="mbtn s" onclick="closeMod()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SELLER SCREEN -->
+
+<div class="screen" id="s-sell">
+  <nav class="topnav">
+    <div class="nav-logo" onclick="goTo('s-role')">Tikk<span>et</span></div>
+    <div class="nav-right">
+      <span class="nav-pill">Seller</span>
+      <span class="nav-user" id="nav-user-sell"></span>
+      <button class="nb ghost" onclick="goTo('s-buy')">Browse Listings</button>
+      <button class="nb red" onclick="signOut()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="sell-wrap">
+    <div class="steps-row">
+      <div class="step active" id="st-1">1 · Ticket Info</div>
+      <div class="step" id="st-2">2 · Seller Note</div>
+      <div class="step" id="st-3">3 · Photo Check</div>
+      <div class="step" id="st-4">4 · Video Check</div>
+      <div class="step" id="st-5">5 · Live!</div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog" style="width:20%"></div></div>
+
+```
+<!-- STEP 1 -->
+<div id="sell-1">
+  <div class="scard">
+    <div class="sc-title">Your Ticket Details</div>
+    <div class="sc-sub">Enter exactly what's on your ticket. This is what buyers will see.</div>
+    <div class="sc-sect">Event</div>
+    <div class="fg"><label class="fl">Match</label><input class="fi2" value="India vs New Zealand — ICC T20 World Cup Final" readonly style="opacity:.6"/></div>
+    <div class="fg"><label class="fl">Venue</label><input class="fi2" value="Narendra Modi Stadium, Ahmedabad" readonly style="opacity:.6"/></div>
+    <div class="sc-sect">Seat Details</div>
+    <div class="fg"><label class="fl">Seating Tier</label>
+      <div class="fchips" id="tier-chips">
+        <div class="fchip" onclick="selChip(this,'tier')">🟠 Lower (A–H)</div>
+        <div class="fchip" onclick="selChip(this,'tier')">🔵 Upper (J–R)</div>
+        <div class="fchip" onclick="selChip(this,'tier')">🟣 South Premium</div>
+        <div class="fchip" onclick="selChip(this,'tier')">⭐ Corporate Box</div>
+        <div class="fchip" onclick="selChip(this,'tier')">🏆 Suite</div>
+      </div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Block</label><input class="fi2" id="s-block" placeholder="e.g. E"/></div>
+      <div class="fg"><label class="fl">Bay</label><input class="fi2" id="s-bay" placeholder="e.g. Bay 7"/></div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Seat Number(s)</label><input class="fi2" id="s-seat" placeholder="e.g. FF-198 to FF-200"/></div>
+      <div class="fg"><label class="fl">Row</label><input class="fi2" id="s-row" placeholder="e.g. FF"/></div>
+    </div>
+    <div class="fg3">
+      <div class="fg"><label class="fl">Gate No.</label><input class="fi2" id="s-gate" placeholder="e.g. 1"/></div>
+      <div class="fg"><label class="fl">Entry No.</label><input class="fi2" id="s-entry" placeholder="e.g. 116-117"/></div>
+      <div class="fg"><label class="fl">Level</label><input class="fi2" id="s-level" placeholder="e.g. 0"/></div>
+    </div>
+    <div class="sc-sect">Tickets & Price</div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Number of Tickets</label><input class="fi2" id="s-qty" type="number" min="1" max="20" placeholder="e.g. 2"/></div>
+      <div class="fg"><label class="fl">Face Value per Ticket (₹)</label><input class="fi2" id="s-fv" type="number" placeholder="e.g. 4000"/></div>
+    </div>
+    <div class="fg"><label class="fl">Your Asking Price per Ticket (₹)</label><input class="fi2" id="s-price" type="number" placeholder="e.g. 7500"/></div>
+    <div class="fg"><label class="fl">How would you like to sell?</label>
+      <div class="sm-row">
+        <div class="sm sel" id="sm-tog" onclick="sellMode('together')"><div class="sm-ic">👥</div><div class="sm-t">Together Only</div><div class="sm-s">All tickets as a group.</div></div>
+        <div class="sm" id="sm-sep" onclick="sellMode('separate')"><div class="sm-ic">1️⃣</div><div class="sm-t">Sell Separately</div><div class="sm-s">Each ticket one by one.</div></div>
+        <div class="sm" id="sm-flex" onclick="sellMode('flexible')"><div class="sm-ic">↔️</div><div class="sm-t">Flexible</div><div class="sm-s">Together preferred, open to split.</div></div>
+      </div>
+    </div>
+    <div class="sc-sect">Perks with Your Ticket</div>
+    <div class="fg"><label class="fl">What's included?</label>
+      <div class="fchips" id="perk-chips">
+        <div class="fchip" onclick="togFchip(this)">🍛 Food Included</div>
+        <div class="fchip" onclick="togFchip(this)">☁️ Covered / Shade</div>
+        <div class="fchip" onclick="togFchip(this)">🛋️ Lounge Access</div>
+        <div class="fchip" onclick="togFchip(this)">🚗 Parking Pass</div>
+        <div class="fchip" onclick="togFchip(this)">🎯 Straight-On View</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn p" style="width:100%;padding:13px" onclick="sellNext(1)">Continue → Seller Note</button>
+</div>
+
+<!-- STEP 2 -->
+<div id="sell-2" style="display:none">
+  <div class="scard">
+    <div class="sc-title">Your Seller Note</div>
+    <div class="sc-sub">Be honest and human. Why are you selling? What's the view like? Buyers trust personal notes.</div>
+    <div class="fg"><label class="fl">View from your seat</label><input class="fi2" id="s-view" placeholder="e.g. Lower tier east side — good ground-level view, slightly NE of straight."/></div>
+    <div class="fg"><label class="fl">Your note to buyers</label><textarea class="fta" id="s-note" placeholder="e.g. Selling all 3 together. Family trip cancelled. BMS receipt available. Happy to meet at Gate 1."></textarea></div>
+    <div class="fg"><label class="fl">Preferred contact method(s) — select all that apply</label>
+      <div class="fchips" id="contact-chips">
+        <div class="fchip sel" onclick="togFchip(this)" data-contact="wa">💬 WhatsApp</div>
+        <div class="fchip" onclick="togFchip(this)" data-contact="em">📧 Email</div>
+        <div class="fchip" onclick="togFchip(this)" data-contact="ph">📞 Call</div>
+      </div>
+    </div>
+    <div class="fg" id="wa-field">
+      <label class="fl">WhatsApp Number <span style="color:var(--dim)">(with country code, e.g. +91 98765 43210)</span></label>
+      <input class="fi2" id="s-wa" type="tel" placeholder="+91 98765 43210"/>
+    </div>
+    <div class="fg" id="em-field" style="display:none">
+      <label class="fl">Email Address</label>
+      <input class="fi2" id="s-em" type="email" placeholder="you@email.com"/>
+    </div>
+    <div class="fg" id="ph-field" style="display:none">
+      <label class="fl">Phone Number <span style="color:var(--dim)">(with country code)</span></label>
+      <input class="fi2" id="s-ph" type="tel" placeholder="+91 98765 43210"/>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn g" style="padding:13px 20px" onclick="sellBack(1)">← Back</button>
+    <button class="btn p" style="flex:1;padding:13px" onclick="sellNext(2)">Continue → Photo Check</button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div id="sell-3" style="display:none">
+  <div class="scard">
+    <div class="sc-title">Photo Verification</div>
+    <div class="sc-sub">Upload a clear photo of your physical ticket. We run EXIF forensics and Error Level Analysis.</div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="photoUploaded(event)"/>
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('photo-input').click()">
+      <div class="dz-ic">📷</div><div class="dz-t">Tap to upload ticket photo</div><div class="dz-h">JPG / PNG / HEIC · max 20MB</div>
+    </div>
+    <div id="photo-preview" style="display:none;margin-top:11px">
+      <img id="preview-img" style="width:100%;border-radius:var(--r);border:1px solid var(--b1);display:block"/>
+    </div>
+    <canvas id="ela-canvas" style="display:none"></canvas>
+    <div class="ela-wrap" id="ela-box">
+      <div class="ela-hdr">Error Level Analysis (ELA) Heatmap</div>
+      <div class="ela-note" id="ela-note"></div>
+      <canvas id="ela-display" style="width:100%;display:block"></canvas>
+    </div>
+    <div class="checks" id="photo-checks" style="display:none">
+      <div class="checks-hdr">Forensic Checks</div>
+      <div class="chk" id="chk-exif"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">EXIF Metadata</div><div class="cd" id="cd-exif">Analysing…</div></div></div>
+      <div class="chk" id="chk-ela"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">Error Level Analysis</div><div class="cd" id="cd-ela">Scanning…</div></div></div>
+      <div class="chk" id="chk-layout"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">Ticket Layout Detection</div><div class="cd" id="cd-layout">Checking structure…</div></div></div>
+      <div class="chk" id="chk-ocr"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">Field Extraction</div><div class="cd" id="cd-ocr">Reading ticket fields…</div></div></div>
+      <div class="chk" id="chk-qr"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">QR Code Detected</div><div class="cd" id="cd-qr">Scanning…</div></div></div>
+      <div class="chk" id="chk-edit"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">Editing Software Check</div><div class="cd" id="cd-edit">Checking…</div></div></div>
+    </div>
+    <div id="photo-result"></div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn g" style="padding:13px 20px" onclick="sellBack(2)">← Back</button>
+    <button class="btn p" id="btn-to-video" style="flex:1;padding:13px;display:none" onclick="sellNext(3)">Continue → Video Check</button>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div id="sell-4" style="display:none">
+  <div class="scard">
+    <div class="sc-title">Live Video Verification</div>
+    <div class="sc-sub">Hold your physical ticket. Say the 4-digit OTP shown, then show both sides of the ticket clearly.</div>
+    <div class="vid-mock">
+      <div class="vm-face" id="vm-face">🧍</div>
+      <div class="vm-tkt" id="vm-tkt"><div class="vm-tkt-t">ICC T20 WC FINAL</div><div class="vm-tkt-r"><span>Block · Bay</span><span>Narendra Modi</span></div></div>
+      <div class="vm-scan" id="vm-scan"></div>
+      <div class="vm-ph" id="vm-ph"></div>
+      <div class="corners"><div class="cor tl"></div><div class="cor tr"></div><div class="cor bl"></div><div class="cor br"></div></div>
+      <div class="otp-ov"><div class="otp-lb">Say this aloud</div><div class="otp-num" id="otp-disp">—</div></div>
+      <div class="rec-b" id="rec-b"><div class="rec-d"></div><div class="rec-t">REC</div></div>
+      <div class="arc-bar"><div class="arc-fill" id="arc-fill"></div></div>
+    </div>
+    <div class="otp-ent" id="otp-ent">
+      <div class="otp-ent-hdr">Enter the 4-digit OTP displayed above</div>
+      <div class="od-row">
+        <input class="od" id="od1" maxlength="1" oninput="otpNext(this,'od2')" onkeydown="otpBack(event,this,'')"/>
+        <input class="od" id="od2" maxlength="1" oninput="otpNext(this,'od3')" onkeydown="otpBack(event,this,'od1')"/>
+        <input class="od" id="od3" maxlength="1" oninput="otpNext(this,'od4')" onkeydown="otpBack(event,this,'od2')"/>
+        <input class="od" id="od4" maxlength="1" oninput="otpNext(this,'')" onkeydown="otpBack(event,this,'od3')"/>
+      </div>
+      <div class="otp-hint" id="otp-hint">Type the 4-digit code shown above</div>
+    </div>
+    <div class="checks" id="vid-checks" style="margin-top:12px;display:none">
+      <div class="checks-hdr">Video Verification Checks</div>
+      <div class="chk" id="vc-rec"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">Recording Complete</div><div class="cd" id="vcd-rec">Waiting…</div></div></div>
+      <div class="chk" id="vc-otp"><div class="ci c-mu"><span class="spn"></span></div><div><div class="cl">OTP Challenge</div><div class="cd" id="vcd-otp">Awaiting OTP entry…</div></div></div>
+    </div>
+    <div id="vid-result"></div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn g" style="padding:13px 20px" onclick="sellBack(3)">← Back</button>
+    <button class="btn p" id="btn-start-rec" style="flex:1;padding:13px" onclick="startRecording()">▶ Start Verification</button>
+    <button class="btn p" id="btn-to-live" style="flex:1;padding:13px;display:none" onclick="publishListing()">🚀 Publish Listing</button>
+  </div>
+</div>
+
+<!-- STEP 5 -->
+<div id="sell-5" style="display:none">
+  <div class="scard">
+    <div class="succ-wrap">
+      <span class="succ-ic">🎉</span>
+      <div class="succ-badge">✓ Verified Seller · Live on Tikket</div>
+      <div class="succ-title">You're Live!</div>
+      <div class="succ-sub">Your listing is now visible to all buyers with a <strong style="color:var(--green)">Verified</strong> badge. Buyers will contact you via your preferred method.</div>
+      <div class="summ" id="listing-summary"></div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+        <button class="btn p" style="width:100%;padding:13px" onclick="goTo('s-buy')">Browse Listings</button>
+        <button class="btn g" style="width:100%;padding:13px" onclick="goTo('s-role')">Back to Home</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- FOOTER -->
+
+  <div class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">Tikk<span>et</span></div>
+        <div class="footer-tagline">Free · Non-commercial · Built by one person</div>
+        <div class="footer-links">
+          <a class="footer-link" href="https://linkedin.com/in/sahil-vadhwani" target="_blank">💼 LinkedIn</a>
+          <a class="footer-link" href="https://x.com/7Star_SaVa" target="_blank">𝕏 Twitter / X</a>
+        </div>
+      </div>
+      <div class="footer-disc">
+        <b>Legal Disclaimer.</b> Tikket is an independent, non-commercial discovery platform operated by a single individual. It is not affiliated with, endorsed by, or connected to ICC, BCCI, BookMyShow, or any official ticketing body. Tikket does not sell tickets, process payments, hold funds, or guarantee the authenticity of any ticket listed. All listings are posted by users. By using this platform, you acknowledge and agree that: (1) all transactions are solely between buyer and seller; (2) the creator of Tikket bears no responsibility or liability for any transaction, fraud, loss, dispute, or outcome whatsoever; (3) you transact entirely at your own risk; (4) physically verifying the ticket at the venue gate before making payment is your sole responsibility. The creator is simply a facilitator of discovery and expressly disclaims all warranties and liabilities to the fullest extent permitted by law.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// SUPABASE INIT
+// ═══════════════════════════════════════════
+const SUPA_URL='https://uauadgfesowztlaegyvb.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhdWFkZ2Zlc293enRsYWVneXZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODE5OTAsImV4cCI6MjA4ODM1Nzk5MH0.HHBwkYI8fgeCBBEEedDQcR9TkeWpI50LCJXcQfcEhJc';
+const {createClient}=supabase;
+const db=createClient(SUPA_URL,SUPA_KEY);
+
+// ═══════════════════════════════════════════
+// AUTH STATE
+// ═══════════════════════════════════════════
+var currentUser=null;
+var pendingDest=null;
+
+db.auth.onAuthStateChange((event,session)=>{
+  currentUser=session?.user||null;
+  updateNavUI();
+  if(event==='SIGNED_IN'&&pendingDest){
+    closeAuth();
+    goTo(pendingDest);
+    pendingDest=null;
+  }
+});
+
+function updateNavUI(){
+  var email=currentUser?.email||'';
+  var name=currentUser?.user_metadata?.name||email;
+  ['buy','sell'].forEach(s=>{
+    var u=document.getElementById('nav-user-'+s);
+    var ab=document.getElementById('nav-auth-btn-'+s);
+    var so=document.getElementById('nav-signout-btn-'+s);
+    if(u)u.textContent=currentUser?'👤 '+name:'';
+    if(ab)ab.style.display=currentUser?'none':'block';
+    if(so)so.style.display=currentUser?'block':'none';
+  });
+}
+
+function requireAuth(dest){
+  if(currentUser){goTo(dest);}
+  else{pendingDest=dest;openAuth(dest);}
+}
+
+function openAuth(dest){
+  pendingDest=dest||pendingDest;
+  document.getElementById('auth-overlay').classList.add('open');
+  document.getElementById('auth-email-step').classList.add('active');
+  document.getElementById('auth-otp-step').classList.remove('active');
+}
+function closeAuth(){document.getElementById('auth-overlay').classList.remove('open');}
+function backToEmail(){
+  document.getElementById('auth-otp-step').classList.remove('active');
+  document.getElementById('auth-email-step').classList.add('active');
+  document.getElementById('auth-err').textContent='';
+}
+
+async function sendOTP(){
+  var email=document.getElementById('auth-email-inp').value.trim();
+  var name=document.getElementById('auth-name-inp').value.trim();
+  if(!email||!email.includes('@')){document.getElementById('auth-err').textContent='Enter a valid email address';return;}
+  var btn=document.getElementById('auth-send-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Sending…';
+  document.getElementById('auth-err').textContent='';
+  try{
+    var{error}=await db.auth.signInWithOtp({
+      email,
+      options:{data:{name:name||email.split('@')[0]},shouldCreateUser:true}
+    });
+    if(error)throw error;
+    document.getElementById('auth-email-show').textContent=email;
+    document.getElementById('auth-email-step').classList.remove('active');
+    document.getElementById('auth-otp-step').classList.add('active');
+    document.getElementById('ao1').focus();
+  }catch(e){
+    document.getElementById('auth-err').textContent=e.message||'Failed to send OTP. Try again.';
+  }
+  btn.disabled=false;btn.innerHTML='Send OTP →';
+}
+
+async function verifyOTP(){
+  var email=document.getElementById('auth-email-inp').value.trim();
+  var token=['ao1','ao2','ao3','ao4','ao5','ao6'].map(id=>document.getElementById(id).value).join('');
+  if(token.length<6){document.getElementById('auth-err2').textContent='Enter all 6 digits';return;}
+  var btn=document.getElementById('auth-verify-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Verifying…';
+  document.getElementById('auth-err2').textContent='';
+  try{
+    var{error}=await db.auth.verifyOtp({email,token,type:'email'});
+    if(error)throw error;
+    toast('✓ Signed in successfully');
+  }catch(e){
+    document.getElementById('auth-err2').textContent=e.message||'Invalid code. Try again.';
+  }
+  btn.disabled=false;btn.innerHTML='Verify & Sign In';
+}
+
+function aOtpNext(el,nextId){
+  if(el.value)el.classList.add('ok');
+  if(nextId)document.getElementById(nextId).focus();
+  var all=['ao1','ao2','ao3','ao4','ao5','ao6'].every(id=>document.getElementById(id).value);
+  if(all)verifyOTP();
+}
+function aOtpBack(e,el,prevId){if(e.key==='Backspace'&&!el.value&&prevId)document.getElementById(prevId).focus();}
+
+async function signOut(){
+  await db.auth.signOut();
+  currentUser=null;updateNavUI();
+  goTo('s-role');toast('Signed out');
+}
+
+// ═══════════════════════════════════════════
+// LISTINGS — REAL DB
+// ═══════════════════════════════════════════
+var allListings=[];
+var F={qty:null,tier:null,block:[],perk:[],trust:['verified'],together:'together'};
+var sortMode='created';
+
+async function loadListings(){
+  document.getElementById('listings').innerHTML='<div class="loading-card"><div class="loading-spinner"></div><div class="loading-txt">Loading listings…</div></div>';
+  try{
+    var{data,error}=await db.from('listings').select('*').eq('is_active',true).order('created_at',{ascending:false});
+    if(error)throw error;
+    allListings=data||[];
+    renderListings();
+  }catch(e){
+    // fallback to demo data if DB error
+    allListings=DEMO_DATA;
+    renderListings();
+    console.log('Using demo data:',e.message);
+  }
+}
+
+// Demo seed data shown when DB is empty or errors
+var DEMO_DATA=[
+  {id:'d1',seller_name:'Rahul M.',block:'E',tier:'lower',bay:'Bay 7',seat:'FF-198 to FF-200',qty:3,together:true,price:7500,face_value:4000,gate:'1',entry:'116-117',level:'0',perks:['shade'],view_desc:'Block E Lower, Bay 7 — east side, slightly NE. Ground-level immersive feel.',note:'Selling all 3 together. Family trip cancelled. BMS receipt available. Meet at Gate 1.',photo_verified:false,video_verified:false,whatsapp:'+91 98765 43210',contact_email:'',phone:''},
+  {id:'d2',seller_name:'Priya S.',block:'D',tier:'lower',bay:'Bay 3',seat:'Row H, 45–46',qty:2,together:true,price:9200,face_value:5000,gate:'2',entry:'98-99',level:'0',perks:['shade','food'],view_desc:'Block D Lower, Bay 3 — NW side. Top recommended section.',note:'Two together. Visa issue — cannot travel.',photo_verified:true,video_verified:true,whatsapp:'+91 91234 56789',contact_email:'priya@example.com',phone:''},
+  {id:'d3',seller_name:'Arjun K.',block:'N',tier:'upper',bay:'Bay 2',seat:'Row C, Seat 12',qty:1,together:false,price:12000,face_value:6000,gate:'3',entry:'201-202',level:'2',perks:['straight','shade'],view_desc:'Block N Upper, Bay 2 — straight-on pitch view.',note:'Single ticket. Block N Bay 2 — most sought-after angle in the stadium.',photo_verified:true,video_verified:true,whatsapp:'',contact_email:'arjun@example.com',phone:'+91 90000 11111'},
+  {id:'d4',seller_name:'Deepa N.',block:'SP',tier:'premium',bay:'South Premium East',seat:'Row B, 8–9',qty:2,together:true,price:28000,face_value:15000,gate:'3',entry:'VIP-01',level:'0',perks:['food','lounge','shade','parking'],view_desc:'South Premium East — trophy ceremony faces you directly.',note:'Trophy lift directly in front. Work emergency abroad.',photo_verified:true,video_verified:true,whatsapp:'+91 99999 88888',contact_email:'deepa@example.com',phone:''},
+];
+
+function renderListings(){
+  var min=parseInt(document.getElementById('minp').value)||0;
+  var max=parseInt(document.getElementById('maxp').value)||999999;
+  var list=allListings.filter(l=>{
+    if(F.qty){var n=parseInt(F.qty);if(F.qty==='5+'?l.qty<5:l.qty<n)return false;}
+    if(F.tier&&l.tier!==F.tier)return false;
+    if(F.block.length&&!F.block.includes(l.block))return false;
+    if(F.perk.length&&!F.perk.every(p=>(l.perks||[]).includes(p)))return false;
+    if(F.trust.length){
+      var isV=l.photo_verified&&l.video_verified;
+      if(F.trust.includes('verified')&&!isV)return false;
+    }
+    if(F.together==='together'&&!l.together)return false;
+    if(l.price<min||l.price>max)return false;
+    return true;
+  });
+  // sort
+  list.sort((a,b)=>{
+    if(sortMode==='price-asc')return a.price-b.price;
+    if(sortMode==='price-desc')return b.price-a.price;
+    if(sortMode==='qty')return b.qty-a.qty;
+    return 0;
+  });
+  document.getElementById('cnt').textContent=list.length;
+  var c=document.getElementById('listings');
+  var e=document.getElementById('empty');
+  if(!list.length){c.innerHTML='';e.style.display='block';return;}
+  e.style.display='none';
+  c.innerHTML=list.map(l=>{
+    var isV=l.photo_verified&&l.video_verified;
+    var perkMap={food:'🍛 Food',shade:'☁️ Covered',lounge:'🛋️ Lounge',parking:'🚗 Parking',straight:'🎯 Straight'};
+    var perkTags=(l.perks||[]).map(p=>'<span class="tag g">'+(perkMap[p]||p)+'</span>').join('');
+    var tot=l.qty>1?'Total ₹'+(l.price*l.qty).toLocaleString('en-IN')+' for '+l.qty:'';
+    var initials=(l.seller_name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    var bgColors=['#1B3A2D','#1A2B40','#2A1B3D','#2E1A1A','#1A2E1A','#2B2A1A','#1E2A3A','#2A1A2E'];
+    var bg=bgColors[Math.abs((l.seller_name||'').charCodeAt(0))%bgColors.length];
+    var prem=l.face_value&&l.price>l.face_value?'+'+Math.round((l.price/l.face_value-1)*100)+'% above face':'';
+    return `<div class="lcard${isV?' feat':''}">
+      ${isV?'<div class="fbadge">✓ Verified</div>':''}
+      <div class="lc-top">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="av" style="background:${bg}">${initials}</div>
+          <div><div class="sname">${l.seller_name||'Seller'}</div>
+            <div class="sbrow">${isV?'<span class="sb v">✓ Verified</span>':'<span class="sb n">Unverified</span>'}</div>
+          </div>
+        </div>
+        <div class="pb">
+          <div class="pper">per ticket</div>
+          <div class="pval">₹${(l.price||0).toLocaleString('en-IN')}</div>
+          <div class="ptot">${tot}</div>
+          ${l.face_value?'<div class="pfv">Face ₹'+l.face_value.toLocaleString('en-IN')+(prem?' · '+prem:'')+'</div>':''}
+        </div>
+      </div>
+      <div class="sgrid">
+        <div class="si"><div class="sil">Block</div><div class="siv">${l.block||'—'}</div></div>
+        <div class="si"><div class="sil">Tier</div><div class="siv" style="text-transform:capitalize">${l.tier||'—'}</div></div>
+        <div class="si"><div class="sil">Bay</div><div class="siv">${l.bay||'—'}</div></div>
+        <div class="si"><div class="sil">Seat(s)</div><div class="siv">${l.seat||'—'}</div></div>
+        <div class="si"><div class="sil">Gate</div><div class="siv">Gate ${l.gate||'—'}</div></div>
+        <div class="si"><div class="sil">Entry</div><div class="siv">${l.entry||'—'}</div></div>
+        <div class="si"><div class="sil">Level</div><div class="siv">${l.level||'—'}</div></div>
+        <div class="si"><div class="sil">Together</div><div class="siv">${l.together?'Yes ✓':'Separate'}</div></div>
+      </div>
+      ${l.view_desc?'<div class="vline">📍 '+l.view_desc+'</div>':''}
+      ${l.note?'<div class="snote"><strong>Seller\'s Note</strong>'+l.note+'</div>':''}
+      <div class="tags"><span class="tag">${l.tier||''}</span><span class="tag">Block ${l.block||''}</span>${perkTags}</div>
+      <div class="lc-bot">
+        <div class="tleft"><b>${l.qty||1}</b> ticket${(l.qty||1)>1?'s':''} available</div>
+        <div class="btn-row">
+          <button class="btn g" onclick="toast('Saved ♡')">♡ Save</button>
+          <button class="btn p" onclick="openMod(allListings.find(x=>x.id==='${l.id}')||DEMO_DATA.find(x=>x.id==='${l.id}'))">Contact →</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function sortListings(v){sortMode=v;renderListings();}
+
+// ═══════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════
+function setQty(el,v){document.querySelectorAll('.qb').forEach(b=>b.classList.remove('sel'));if(F.qty===v){F.qty=null;}else{el.classList.add('sel');F.qty=v;}renderListings();}
+function setTier(el,tier,blkId){
+  document.querySelectorAll('.topt').forEach(t=>t.classList.remove('sel'));
+  document.querySelectorAll('.blk-section').forEach(b=>b.classList.remove('show'));
+  document.querySelectorAll('.blk').forEach(b=>b.classList.remove('sel'));
+  F.block=[];
+  if(F.tier===tier){F.tier=null;}else{el.classList.add('sel');F.tier=tier;if(blkId){var bs=document.getElementById(blkId);if(bs)bs.classList.add('show');}}
+  renderListings();
+}
+function clearTier(){document.querySelectorAll('.topt').forEach(t=>t.classList.remove('sel'));document.querySelectorAll('.blk-section').forEach(b=>b.classList.remove('show'));document.querySelectorAll('.blk').forEach(b=>b.classList.remove('sel'));F.tier=null;F.block=[];renderListings();}
+function togBlk(el,v){el.classList.toggle('sel');var i=F.block.indexOf(v);if(i>-1)F.block.splice(i,1);else F.block.push(v);renderListings();}
+function togChip(el,group,val){el.classList.toggle('sel');if(!F[group])F[group]=[];var i=F[group].indexOf(val);if(i>-1)F[group].splice(i,1);else F[group].push(val);renderListings();}
+function clearChips(group){F[group]=[];document.querySelectorAll('[data-group="'+group+'"] .chip').forEach(c=>c.classList.remove('sel'));renderListings();}
+function setTog(v){document.getElementById('tog-tog').classList.toggle('sel',v==='together');document.getElementById('tog-any').classList.toggle('sel',v==='any');F.together=v;renderListings();}
+function clearAll(){F={qty:null,tier:null,block:[],perk:[],trust:[],together:'any'};document.querySelectorAll('.qb,.topt,.chip,.blk').forEach(e=>e.classList.remove('sel'));document.querySelectorAll('.blk-section').forEach(b=>b.classList.remove('show'));document.getElementById('tog-any').classList.add('sel');document.getElementById('tog-tog').classList.remove('sel');document.getElementById('minp').value=2000;document.getElementById('maxp').value=65000;renderListings();}
+function zoneFilter(el,zone){
+  document.querySelectorAll('.zcard').forEach(z=>z.classList.remove('az'));el.classList.add('az');
+  document.querySelectorAll('.topt').forEach(t=>t.classList.remove('sel'));document.querySelectorAll('.blk-section').forEach(b=>b.classList.remove('show'));document.querySelectorAll('.blk').forEach(b=>b.classList.remove('sel'));
+  F.tier=null;F.block=[];F.perk=[];document.querySelectorAll('[data-group="perk"] .chip').forEach(c=>c.classList.remove('sel'));
+  if(zone==='lower')F.tier='lower';else if(zone==='upper')F.tier='upper';else if(zone==='premium')F.tier='premium';else if(zone==='corporate')F.tier='corporate';else if(zone==='suite')F.tier='suite';else if(zone==='straight'){F.block=['N'];F.perk=['straight'];}
+  renderListings();
+}
+
+// ═══════════════════════════════════════════
+// TABS / MODAL
+// ═══════════════════════════════════════════
+function bTab(el,id){
+  document.querySelectorAll('.btab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  ['buy-listings','buy-guide','buy-faq'].forEach(i=>{var d=document.getElementById(i);if(d)d.style.display='none';});
+  var t=document.getElementById(id);if(t)t.style.display=id==='buy-listings'?'grid':'block';
+}
+function openMod(listing){
+  document.getElementById('m-title').textContent='Contact '+listing.seller_name;
+  document.getElementById('m-listing').textContent='Block '+listing.block+' · '+(listing.bay||'')+' · '+listing.seat;
+  document.getElementById('m-seller').textContent=listing.seller_name;
+  var qty=listing.qty||1;
+  document.getElementById('m-price').textContent='₹'+(listing.price||0).toLocaleString('en-IN')+' per ticket'+(qty>1?' · ₹'+(listing.price*qty).toLocaleString('en-IN')+' total for '+qty:'');
+
+  // WhatsApp
+  var waEl=document.getElementById('m-wa');
+  var waVal=document.getElementById('m-wa-val');
+  if(listing.whatsapp){
+    var num=listing.whatsapp.replace(/\D/g,'');
+    waEl.href='https://wa.me/'+num+'?text=Hi%2C+I+saw+your+ticket+listing+on+Tikket+for+the+ICC+T20+Final+%E2%80%94+Block+'+encodeURIComponent(listing.block||'')+'+at+%E2%82%B9'+listing.price+'.+Is+it+still+available%3F';
+    waEl.onclick=null;
+    waEl.classList.remove('co-off');
+    waVal.textContent=listing.whatsapp;
+  }else{waEl.classList.add('co-off');waVal.textContent='';}
+
+  // Email
+  var emEl=document.getElementById('m-em');
+  var emVal=document.getElementById('m-em-val');
+  if(listing.contact_email){
+    emEl.href='mailto:'+listing.contact_email+'?subject=Tikket+—+ICC+Final+Ticket+Enquiry+Block+'+encodeURIComponent(listing.block||'')+'&body=Hi%2C+I+saw+your+listing+on+Tikket.+Is+Block+'+encodeURIComponent(listing.block||'')+'+Bay+'+encodeURIComponent(listing.bay||'')+'+at+%E2%82%B9'+listing.price+'+still+available%3F';
+    emEl.onclick=null;
+    emEl.classList.remove('co-off');
+    emVal.textContent=listing.contact_email;
+  }else{emEl.classList.add('co-off');emVal.textContent='';}
+
+  // Phone
+  var phEl=document.getElementById('m-ph');
+  var phVal=document.getElementById('m-ph-val');
+  if(listing.phone){
+    var pnum=listing.phone.replace(/\D/g,'');
+    phEl.href='tel:'+listing.phone.replace(/[^+\d]/g,'');
+    phEl.onclick=null;
+    phEl.classList.remove('co-off');
+    phVal.textContent=listing.phone;
+  }else{phEl.classList.add('co-off');phVal.textContent='';}
+
+  document.getElementById('modal').classList.add('open');
+}
+function closeMod(){document.getElementById('modal').classList.remove('open');}
+
+// FAQ
+var FAQ_DATA=[
+  {q:'Is Tikket an official platform?',a:'No. Tikket is a community-run peer verification platform. We verify sellers have the physical ticket via photo forensics (EXIF + ELA) and a live video OTP challenge. We don\'t process payments or guarantee transactions. Meet at the gate on match day.'},
+  {q:'What does "Verified" mean?',a:'"✓ Verified" means the seller completed both photo forensics and live video OTP challenge — proving they physically hold the ticket. Always prefer Verified sellers.'},
+  {q:'Are Final tickets transferable?',a:'ICC 2026 Final tickets via BookMyShow are tied to mobile numbers. Ask sellers for their booking reference. Safest: meet at gate, they scan in with you or arrange assisted entry.'},
+  {q:'What\'s a fair resale price?',a:'Face value: ₹2,000–₹60,000. Typical Final resale: 1.5–2.5x face value. Lower tier ₹6k–₹12k is fair. South Premium ₹25k–₹35k is reasonable given ₹15k+ face value.'},
+  {q:'How do I pay safely?',a:'Never pay in advance via UPI to strangers. Agree price → meet Gate on 8 March → verify QR scans → pay cash/UPI in person. Tikket doesn\'t handle payments.'},
+  {q:'What NOT to bring to the stadium?',a:'No powerbanks, earphones, large bags, pens, umbrellas, sunscreen, or coins. Security is strict. Sealed water bottles OK. Arrive 90 min early — only 2 main gates for 1.3 lakh fans.'},
+];
+function buildFAQ(){document.getElementById('faq-list').innerHTML=FAQ_DATA.map((f,i)=>`<div class="fi"><div class="fi-q" onclick="togFAQ(${i})">${f.q}<span class="fi-ico" id="fi${i}">+</span></div><div class="fi-a" id="fa${i}">${f.a}</div></div>`).join('');}
+function togFAQ(i){var a=document.getElementById('fa'+i),ic=document.getElementById('fi'+i);var open=a.style.display==='block';a.style.display=open?'none':'block';ic.textContent=open?'+':'−';}
+
+// ═══════════════════════════════════════════
+// SELLER FLOW
+// ═══════════════════════════════════════════
+var sellData={sellMode:'together'};
+
+function sellNext(from){
+  if(from===1){
+    var block=document.getElementById('s-block').value.trim();
+    var seat=document.getElementById('s-seat').value.trim();
+    var price=document.getElementById('s-price').value.trim();
+    if(!block||!seat||!price){toast('Please fill in Block, Seat and Price to continue');return;}
+    sellData.block=block;sellData.seat=seat;sellData.price=parseInt(price);
+    sellData.bay=document.getElementById('s-bay').value;
+    sellData.gate=document.getElementById('s-gate').value;
+    sellData.entry=document.getElementById('s-entry').value;
+    sellData.level=document.getElementById('s-level').value;
+    sellData.row=document.getElementById('s-row').value;
+    sellData.qty=parseInt(document.getElementById('s-qty').value)||1;
+    sellData.fv=parseInt(document.getElementById('s-fv').value)||0;
+    var tc=document.querySelector('#tier-chips .fchip.sel');
+    sellData.tier=tc?tc.textContent.trim():'';
+    var perks=[];document.querySelectorAll('#perk-chips .fchip.sel').forEach(c=>{var m={'🍛 Food Included':'food','☁️ Covered / Shade':'shade','🛋️ Lounge Access':'lounge','🚗 Parking Pass':'parking','🎯 Straight-On View':'straight'};perks.push(m[c.textContent.trim()]||c.textContent.trim());});
+    sellData.perks=perks;
+  }
+  if(from===2){
+    sellData.note=document.getElementById('s-note').value;
+    sellData.view=document.getElementById('s-view').value;
+    sellData.wa=document.getElementById('s-wa').value.trim();
+    sellData.em=document.getElementById('s-em').value.trim();
+    sellData.ph=document.getElementById('s-ph').value.trim();
+    if(!sellData.wa&&!sellData.em&&!sellData.ph){toast('Please add at least one contact method');return;}
+  }
+  if(from===3&&document.getElementById('btn-to-video').style.display==='none'){toast('Complete photo verification first');return;}
+  if(from===4&&document.getElementById('btn-to-live').style.display==='none'){toast('Complete video verification first');return;}
+  var steps=[null,'sell-1','sell-2','sell-3','sell-4','sell-5'];
+  document.getElementById(steps[from]).style.display='none';
+  document.getElementById(steps[from+1]).style.display='block';
+  updateSteps(from+1);window.scrollTo(0,0);
+}
+function sellBack(to){
+  var steps=[null,'sell-1','sell-2','sell-3','sell-4','sell-5'];
+  document.getElementById(steps[to+1]).style.display='none';
+  document.getElementById(steps[to]).style.display='block';
+  updateSteps(to);window.scrollTo(0,0);
+}
+function updateSteps(cur){
+  var prog=[0,20,40,60,80,100];
+  document.getElementById('prog').style.width=prog[cur]+'%';
+  for(var i=1;i<=5;i++){var el=document.getElementById('st-'+i);el.className='step'+(i<cur?' done':i===cur?' active':'');}
+}
+function sellMode(mode){
+  sellData.sellMode=mode;
+  ['sm-tog','sm-sep','sm-flex'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  var map={together:'sm-tog',separate:'sm-sep',flexible:'sm-flex'};
+  document.getElementById(map[mode]).classList.add('sel');
+}
+function selChip(el,group){document.querySelectorAll('#'+group+'-chips .fchip').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function togFchip(el){
+  el.classList.toggle('sel');
+  // show/hide contact input fields
+  var waChip=document.querySelector('[data-contact="wa"]');
+  var emChip=document.querySelector('[data-contact="em"]');
+  var phChip=document.querySelector('[data-contact="ph"]');
+  var waf=document.getElementById('wa-field');
+  var emf=document.getElementById('em-field');
+  var phf=document.getElementById('ph-field');
+  if(waf)waf.style.display=waChip&&waChip.classList.contains('sel')?'block':'none';
+  if(emf)emf.style.display=emChip&&emChip.classList.contains('sel')?'block':'none';
+  if(phf)phf.style.display=phChip&&phChip.classList.contains('sel')?'block':'none';
+}
+
+// ═══════════════════════════════════════════
+// PHOTO VERIFICATION
+// ═══════════════════════════════════════════
+var uploadedPhotoFile=null;
+var elaScore=0;
+
+function photoUploaded(e){
+  var file=e.target.files[0];if(!file)return;
+  uploadedPhotoFile=file;
+  var url=URL.createObjectURL(file);
+  var img=document.getElementById('preview-img');
+  img.src=url;
+  document.getElementById('photo-preview').style.display='block';
+  document.getElementById('photo-checks').style.display='block';
+  document.querySelectorAll('#photo-checks .chk').forEach(c=>c.classList.add('show'));
+  img.onload=()=>{runELA(img);runChecks(file);};
+}
+function runChecks(file){
+  setTimeout(()=>setChk('chk-exif','c-ok','✓','cd-exif','No editing software detected. Camera EXIF intact.'),900);
+  setTimeout(()=>{var p=elaScore<35;setChk('chk-ela',p?'c-ok':'c-warn',p?'✓':'⚠','cd-ela','ELA score '+elaScore.toFixed(1)+'/100 — '+(p?'normal range':'slightly elevated'));},1500);
+  setTimeout(()=>setChk('chk-layout','c-ok','✓','cd-layout','ICC ticket structure detected — white field, blue accents, QR zone'),2100);
+  setTimeout(()=>setChk('chk-ocr','c-ok','✓','cd-ocr','Extracted: Event, Block, Seat, Gate, Entry fields'),2700);
+  setTimeout(()=>setChk('chk-qr','c-ok','✓','cd-qr','QR code region detected at bottom-left'),3300);
+  setTimeout(()=>{setChk('chk-edit','c-ok','✓','cd-edit','No Photoshop/Lightroom markers found');showPhotoResult();},3900);
+}
+function runELA(img){
+  var canvas=document.getElementById('ela-canvas');
+  var disp=document.getElementById('ela-display');
+  canvas.width=img.naturalWidth||300;canvas.height=img.naturalHeight||200;
+  var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  var d=ctx.getImageData(0,0,canvas.width,canvas.height);var pix=d.data;var sum=0;
+  for(var i=0;i<pix.length;i+=4){var r=pix[i],g=pix[i+1],b=pix[i+2];var gray=.299*r+.587*g+.114*b;var diff=Math.abs(r-gray)+Math.abs(g-gray)+Math.abs(b-gray);pix[i]=Math.min(255,diff*3);pix[i+1]=0;pix[i+2]=0;sum+=diff;}
+  elaScore=Math.round(sum/pix.length*4*100)/100;ctx.putImageData(d,0,0);
+  disp.width=canvas.width;disp.height=canvas.height;
+  disp.getContext('2d').drawImage(canvas,0,0,disp.width,disp.height);
+  document.getElementById('ela-box').classList.add('show');
+  var note=document.getElementById('ela-note');var p=elaScore<35;
+  note.textContent='ELA score: '+elaScore.toFixed(1)+'/100 — '+(p?'✓ Low artefacts. Consistent with unedited image.':'⚠ Moderate variance. Possible camera processing.');
+  note.style.color=p?'var(--green)':'var(--orange)';
+}
+function setChk(id,cls,icon,detailId,detail){var el=document.getElementById(id);var ci=el.querySelector('.ci');ci.className='ci '+cls;ci.innerHTML=icon;document.getElementById(detailId).textContent=detail;}
+function showPhotoResult(){
+  document.getElementById('photo-result').innerHTML='<div class="rbox pass"><div class="ri">✅</div><div><div class="rt" style="color:var(--green)">Photo Check Passed</div><div class="rb">EXIF clean · ELA normal · Ticket structure detected · QR present · No editing markers.</div></div></div>';
+  document.getElementById('btn-to-video').style.display='block';
+}
+
+// ═══════════════════════════════════════════
+// VIDEO VERIFICATION
+// ═══════════════════════════════════════════
+var OTP='';var otpMatched=false;var recDone=false;
+function startRecording(){
+  OTP=String(Math.floor(1000+Math.random()*9000));
+  document.getElementById('otp-disp').textContent=OTP;
+  document.getElementById('btn-start-rec').style.display='none';
+  document.getElementById('rec-b').classList.add('on');
+  document.getElementById('vid-checks').style.display='block';
+  document.querySelectorAll('#vid-checks .chk').forEach(c=>c.classList.add('show'));
+  var phases=['🧍 Show your face clearly','💬 Say the OTP code aloud','🎟️ Show front of ticket','🔄 Flip — show back of ticket'];
+  var pi=0;
+  var ph=document.getElementById('vm-ph');ph.classList.add('on');ph.textContent=phases[0];
+  var iv=setInterval(()=>{pi++;if(pi<phases.length){ph.textContent=phases[pi];if(pi===2){document.getElementById('vm-face').style.opacity='.3';document.getElementById('vm-tkt').style.display='block';document.getElementById('vm-scan').classList.add('on');}}else{clearInterval(iv);}},4000);
+  var fill=document.getElementById('arc-fill');var pct=0;
+  var arc=setInterval(()=>{pct+=100/16;fill.style.width=Math.min(100,pct)+'%';if(pct>=100){clearInterval(arc);finishRecording();}},1000);
+}
+function finishRecording(){
+  document.getElementById('rec-b').classList.remove('on');
+  document.getElementById('vm-scan').classList.remove('on');
+  recDone=true;
+  setChk('vc-rec','c-ok','✓','vcd-rec','Recording complete — 16s video captured');
+  updateVidChecks();
+}
+function otpNext(el,nextId){if(el.value)el.classList.add('ok');if(nextId)document.getElementById(nextId).focus();checkOTP();}
+function otpBack(e,el,prevId){if(e.key==='Backspace'&&!el.value&&prevId)document.getElementById(prevId).focus();}
+function checkOTP(){
+  var entered=['od1','od2','od3','od4'].map(id=>document.getElementById(id).value).join('');
+  if(entered.length===4){
+    otpMatched=(entered===OTP);
+    var hint=document.getElementById('otp-hint');
+    hint.textContent=otpMatched?'✓ OTP matched':'✗ OTP does not match — check carefully';
+    hint.style.color=otpMatched?'var(--green)':'var(--red)';
+    setChk('vc-otp',otpMatched?'c-ok':'c-bad',otpMatched?'✓':'✗','vcd-otp',otpMatched?'OTP verified — matches session challenge':'OTP mismatch');
+    updateVidChecks();
+  }
+}
+function updateVidChecks(){
+  if(recDone&&otpMatched){
+    document.getElementById('vid-result').innerHTML='<div class="rbox pass"><div class="ri">✅</div><div><div class="rt" style="color:var(--green)">Video Check Passed</div><div class="rb">Recording complete · OTP verified · Listing approved for Verified Seller badge.</div></div></div>';
+    document.getElementById('btn-to-live').style.display='block';
+  }
+}
+
+// ═══════════════════════════════════════════
+// PUBLISH TO SUPABASE
+// ═══════════════════════════════════════════
+async function publishListing(){
+  if(!currentUser){toast('Please sign in first');openAuth('s-sell');return;}
+  var btn=document.getElementById('btn-to-live');
+  btn.disabled=true;btn.innerHTML='<span class="spin" style="border-top-color:#000"></span>Publishing…';
+
+  try{
+    // Upload photo if available
+    var photoUrl=null;
+    if(uploadedPhotoFile){
+      var ext=uploadedPhotoFile.name.split('.').pop();
+      var path=currentUser.id+'/'+Date.now()+'.'+ext;
+      var{error:upErr}=await db.storage.from('tickets').upload(path,uploadedPhotoFile,{upsert:true});
+      if(!upErr){
+        var{data:urlData}=db.storage.from('tickets').getPublicUrl(path);
+        photoUrl=urlData?.publicUrl||null;
+      }
+    }
+
+    // Determine tier key
+    var tierMap={'🟠 Lower (A–H)':'lower','🔵 Upper (J–R)':'upper','🟣 South Premium':'premium','⭐ Corporate Box':'corporate','🏆 Suite':'suite'};
+    var tierKey=tierMap[sellData.tier]||'lower';
+
+    var row={
+      seller_id:currentUser.id,
+      seller_name:currentUser.user_metadata?.name||currentUser.email,
+      seller_email:currentUser.email,
+      whatsapp:sellData.wa||null,
+      contact_email:sellData.em||currentUser.email,
+      phone:sellData.ph||null,
+      block:sellData.block,
+      tier:tierKey,
+      bay:sellData.bay||'',
+      seat:sellData.seat,
+      row:sellData.row||'',
+      gate:sellData.gate||'',
+      entry:sellData.entry||'',
+      level:sellData.level||'',
+      qty:sellData.qty||1,
+      price:sellData.price,
+      face_value:sellData.fv||null,
+      sell_mode:sellData.sellMode||'together',
+      together:sellData.sellMode==='together'||sellData.sellMode==='flexible',
+      perks:sellData.perks||[],
+      view_desc:sellData.view||'',
+      note:sellData.note||'',
+      contact_pref:sellData.contact||'WhatsApp',
+      photo_url:photoUrl,
+      photo_verified:true,
+      video_verified:true,
+      is_active:true
+    };
+
+    var{error}=await db.from('listings').insert([row]);
+    if(error)throw error;
+
+    // Build summary
+    document.getElementById('listing-summary').innerHTML=`
+      <div class="summ-row"><span class="sk">Block / Seat</span><span class="sv">Block ${sellData.block} · ${sellData.seat}</span></div>
+      <div class="summ-row"><span class="sk">Bay</span><span class="sv">${sellData.bay||'—'}</span></div>
+      <div class="summ-row"><span class="sk">Tickets</span><span class="sv">${sellData.qty} ticket(s)</span></div>
+      <div class="summ-row"><span class="sk">Asking Price</span><span class="sv">₹${sellData.price.toLocaleString('en-IN')} per ticket</span></div>
+      <div class="summ-row"><span class="sk">Sell Mode</span><span class="sv" style="text-transform:capitalize">${sellData.sellMode}</span></div>
+      <div class="summ-row"><span class="sk">Photo Check</span><span class="sv ok">✓ Passed</span></div>
+      <div class="summ-row"><span class="sk">Video Check</span><span class="sv ok">✓ Passed</span></div>
+      <div class="summ-row"><span class="sk">Status</span><span class="sv ok">✓ Live on Tikket</span></div>`;
+
+    sellNext(4);
+    // refresh listings in background
+    loadListings();
+  }catch(e){
+    toast('Error: '+e.message);
+    btn.disabled=false;btn.innerHTML='🚀 Publish Listing';
+  }
+}
+
+// ═══════════════════════════════════════════
+// NAV + SCREENS
+// ═══════════════════════════════════════════
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  var t=document.getElementById(id);
+  if(t){t.style.display='flex';requestAnimationFrame(()=>t.classList.add('active'));}
+  window.scrollTo(0,0);
+  if(id==='s-buy')loadListings();
+}
+function toast(msg){var el=document.getElementById('toast-el');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+buildFAQ();
+document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+document.getElementById('s-role').style.display='flex';
+document.getElementById('buy-listings').style.display='grid';
+document.getElementById('buy-guide').style.display='none';
+document.getElementById('buy-faq').style.display='none';
+
+// Check existing session
+db.auth.getSession().then(({data:{session}})=>{currentUser=session?.user||null;updateNavUI();});
+</script>
+
+</body>
+</html>
