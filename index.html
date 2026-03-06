@@ -825,15 +825,23 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-heigh
   <div class="scard">
     <div class="sc-title">Live Video Verification</div>
     <div class="sc-sub">Hold your physical ticket. Say the 4-digit OTP shown, then show both sides of the ticket clearly.</div>
-    <div class="vid-mock">
-      <div class="vm-face" id="vm-face">🧍</div>
-      <div class="vm-tkt" id="vm-tkt"><div class="vm-tkt-t">ICC T20 WC FINAL</div><div class="vm-tkt-r"><span>Block · Bay</span><span>Narendra Modi</span></div></div>
-      <div class="vm-scan" id="vm-scan"></div>
-      <div class="vm-ph" id="vm-ph"></div>
-      <div class="corners"><div class="cor tl"></div><div class="cor tr"></div><div class="cor bl"></div><div class="cor br"></div></div>
-      <div class="otp-ov"><div class="otp-lb">Say this aloud</div><div class="otp-num" id="otp-disp">—</div></div>
-      <div class="rec-b" id="rec-b"><div class="rec-d"></div><div class="rec-t">REC</div></div>
-      <div class="arc-bar"><div class="arc-fill" id="arc-fill"></div></div>
+    <div class="vid-mock" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;border:1px solid var(--b1)">
+      <video id="live-camera" autoplay playsinline muted style="width:100%;display:block;aspect-ratio:4/3;object-fit:cover"></video>
+      <div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none">
+        <div class="corners"><div class="cor tl"></div><div class="cor tr"></div><div class="cor bl"></div><div class="cor br"></div></div>
+        <div class="otp-ov"><div class="otp-lb">Say this aloud</div><div class="otp-num" id="otp-disp">—</div></div>
+        <div class="rec-b" id="rec-b"><div class="rec-d"></div><div class="rec-t">REC</div></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,.8))">
+          <div class="vm-ph" id="vm-ph" style="position:static;animation:none;display:block;opacity:1"></div>
+        </div>
+        <div class="arc-bar"><div class="arc-fill" id="arc-fill"></div></div>
+      </div>
+      <div id="cam-blocked" style="display:none;position:absolute;inset:0;background:#070910;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:20px">
+        <div style="font-size:36px">📷</div>
+        <div style="font-family:var(--fm);font-size:12px;color:var(--text)">Camera access needed</div>
+        <div style="font-family:var(--fm);font-size:10px;color:var(--muted);line-height:1.6">Tap the button below and allow camera access when your browser asks. This lets us record your verification video.</div>
+        <button onclick="requestCamera()" style="margin-top:8px;padding:10px 20px;background:var(--gold);color:#000;border:none;border-radius:var(--r2);font-family:var(--fb);font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px">Allow Camera →</button>
+      </div>
     </div>
     <div class="otp-ent" id="otp-ent">
       <div class="otp-ent-hdr">Enter the 4-digit OTP displayed above</div>
@@ -1241,6 +1249,11 @@ function sellNext(from){
     if(!sellData.wa&&!sellData.em&&!sellData.ph){toast('Please add at least one contact method');return;}
   }
   if(from===3&&document.getElementById('btn-to-video').style.display==='none'){toast('Complete photo verification first');return;}
+  if(from===3){setTimeout(()=>{
+    document.getElementById('cam-blocked').style.display='flex';
+    document.getElementById('btn-start-rec').style.display='none';
+    requestCamera();
+  },400);}
   if(from===4&&document.getElementById('btn-to-live').style.display==='none'){toast('Complete video verification first');return;}
   var steps=[null,'sell-1','sell-2','sell-3','sell-4','sell-5'];
   document.getElementById(steps[from]).style.display='none';
@@ -1329,23 +1342,57 @@ function showPhotoResult(){
 // VIDEO VERIFICATION
 // ═══════════════════════════════════════════
 var OTP='';var otpMatched=false;var recDone=false;
+var mediaStream=null;
+var mediaRecorder=null;
+var recordedChunks=[];
+
+async function requestCamera(){
+  document.getElementById('cam-blocked').style.display='none';
+  try{
+    mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:true});
+    var vid=document.getElementById('live-camera');
+    vid.srcObject=mediaStream;
+    vid.play();
+    document.getElementById('btn-start-rec').style.display='block';
+    toast('✓ Camera ready — tap Start Verification');
+  }catch(e){
+    document.getElementById('cam-blocked').style.display='flex';
+    toast('Camera blocked — please allow access');
+  }
+}
+
 function startRecording(){
+  if(!mediaStream){requestCamera();return;}
   OTP=String(Math.floor(1000+Math.random()*9000));
   document.getElementById('otp-disp').textContent=OTP;
   document.getElementById('btn-start-rec').style.display='none';
   document.getElementById('rec-b').classList.add('on');
   document.getElementById('vid-checks').style.display='block';
   document.querySelectorAll('#vid-checks .chk').forEach(c=>c.classList.add('show'));
-  var phases=['🧍 Show your face clearly','💬 Say the OTP code aloud','🎟️ Show front of ticket','🔄 Flip — show back of ticket'];
+
+  // Start actual recording
+  recordedChunks=[];
+  try{
+    mediaRecorder=new MediaRecorder(mediaStream);
+    mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recordedChunks.push(e.data);};
+    mediaRecorder.start();
+  }catch(e){console.log('MediaRecorder error:',e);}
+
+  var phases=['🧍 Show your face clearly','💬 Say the OTP code aloud — '+OTP,'🎟️ Hold up front of ticket to camera','🔄 Flip ticket — show the back'];
   var pi=0;
-  var ph=document.getElementById('vm-ph');ph.classList.add('on');ph.textContent=phases[0];
-  var iv=setInterval(()=>{pi++;if(pi<phases.length){ph.textContent=phases[pi];if(pi===2){document.getElementById('vm-face').style.opacity='.3';document.getElementById('vm-tkt').style.display='block';document.getElementById('vm-scan').classList.add('on');}}else{clearInterval(iv);}},4000);
+  var ph=document.getElementById('vm-ph');
+  ph.style.color='var(--gold)';ph.textContent=phases[0];
+  var iv=setInterval(()=>{pi++;if(pi<phases.length){ph.textContent=phases[pi];}else{clearInterval(iv);}},4000);
+
   var fill=document.getElementById('arc-fill');var pct=0;
   var arc=setInterval(()=>{pct+=100/16;fill.style.width=Math.min(100,pct)+'%';if(pct>=100){clearInterval(arc);finishRecording();}},1000);
 }
 function finishRecording(){
   document.getElementById('rec-b').classList.remove('on');
-  document.getElementById('vm-scan').classList.remove('on');
+  document.getElementById('vm-ph').textContent='✓ Recording complete';
+  if(mediaRecorder&&mediaRecorder.state!=='inactive'){
+    mediaRecorder.stop();
+  }
   recDone=true;
   setChk('vc-rec','c-ok','✓','vcd-rec','Recording complete — 16s video captured');
   updateVidChecks();
@@ -1374,6 +1421,7 @@ function updateVidChecks(){
 // PUBLISH TO SUPABASE
 // ═══════════════════════════════════════════
 async function publishListing(){
+  if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;}
   if(!currentUser){toast('Please sign in first');openAuth('s-sell');return;}
   var btn=document.getElementById('btn-to-live');
   btn.disabled=true;btn.innerHTML='<span class="spin" style="border-top-color:#000"></span>Publishing…';
@@ -1398,9 +1446,7 @@ async function publishListing(){
     var row={
       seller_id:currentUser.id,
       seller_name:currentUser.user_metadata?.name||currentUser.email,
-      seller_email:sellData.em||currentUser.email,
-      whatsapp:sellData.wa||null,
-      phone:sellData.ph||null,
+      seller_email:sellData.em||currentUser.email||'',
       block:sellData.block,
       tier:tierKey,
       bay:sellData.bay||'',
@@ -1416,7 +1462,7 @@ async function publishListing(){
       together:sellData.sellMode==='together'||sellData.sellMode==='flexible',
       perks:sellData.perks||[],
       view_desc:sellData.view||'',
-      note:sellData.note||'',
+      note:(sellData.note||'')+(sellData.wa?'\n📱 WhatsApp: '+sellData.wa:'')+(sellData.ph?'\n📞 Phone: '+sellData.ph:''),
       contact_pref:sellData.contact||'WhatsApp',
       photo_url:photoUrl,
       photo_verified:true,
