@@ -78,19 +78,19 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-heigh
 .role-prompt{font-family:var(–fm);font-size:10px;letter-spacing:2px;color:var(–muted);text-transform:uppercase;text-align:center;margin-bottom:16px}
 .role-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .rcard{background:var(–s1);border:1px solid var(–b1);border-radius:12px;padding:30px 24px;cursor:pointer;transition:all .28s;position:relative;overflow:hidden}
-.rcard.buyer:hover{border-color:rgba(74,158,232,.45);transform:translateY(-4px);box-shadow:0 20px 50px rgba(74,158,232,.08)}
+.rcard.buyer:hover{border-color:rgba(212,168,67,.4);transform:translateY(-4px);box-shadow:0 20px 50px rgba(212,168,67,.08)}
 .rcard.seller:hover{border-color:rgba(212,168,67,.4);transform:translateY(-4px);box-shadow:0 20px 50px rgba(212,168,67,.08)}
 .rcard::after{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–c,#fff),transparent);opacity:.15}
-.rcard.buyer{–c:#4A9EE8}.rcard.seller{–c:#D4A843}
+.rcard.buyer{–c:#D4A843}.rcard.seller{–c:#D4A843}
 .rc-ico{font-size:42px;margin-bottom:14px;display:block}
 .rc-title{font-family:var(–fd);font-size:32px;letter-spacing:1px;margin-bottom:6px}
-.buyer .rc-title{color:var(–blue)}.seller .rc-title{color:var(–gold)}
+.buyer .rc-title{color:var(–gold)}.seller .rc-title{color:var(–gold)}
 .rc-desc{font-family:var(–fm);font-size:11px;color:var(–muted);line-height:1.7;margin-bottom:16px}
 .rc-list{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:20px}
 .rc-list li{font-family:var(–fm);font-size:10px;color:var(–muted);display:flex;align-items:center;gap:7px}
 .rc-list li::before{content:‘→’;color:var(–dim)}
 .rc-btn{width:100%;padding:11px;border-radius:var(–r2);border:none;font-family:var(–fb);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .18s}
-.buyer .rc-btn{background:var(–blue);color:#fff}.seller .rc-btn{background:var(–gold);color:#000}
+.buyer .rc-btn{background:var(–gold);color:#000}.seller .rc-btn{background:var(–gold);color:#000}
 
 /* NAV */
 .topnav{background:var(–s1);border-bottom:1px solid var(–b1);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;position:sticky;top:0;z-index:100}
@@ -130,7 +130,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-heigh
 .qb{width:36px;height:36px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
 .qb:hover{border-color:var(–b3);color:var(–text)}.qb.sel{border-color:var(–gold);background:var(–gdim);color:var(–gold)}
 .tier-list{display:flex;flex-direction:column;gap:5px}
-.topt{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);cursor:pointer;transition:all .15s}
+.topt{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:rgba(212,168,67,.2);touch-action:manipulation;user-select:none}
 .topt:hover{border-color:var(–b3)}.topt.sel{border-color:rgba(212,168,67,.5);background:var(–gdim)}
 .topt-radio{width:13px;height:13px;border-radius:50%;border:1px solid var(–b3);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .topt.sel .topt-radio{border-color:var(–gold);background:var(–gold)}
@@ -150,7 +150,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-heigh
 .blk.sel.sp{border-color:var(–purple);background:rgba(155,93,229,.1);color:var(–purple)}
 .blk-star{position:absolute;top:1px;right:2px;font-size:5px}
 .chip-row{display:flex;gap:5px;flex-wrap:wrap}
-.chip{padding:5px 10px;border-radius:20px;border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:9px;cursor:pointer;transition:all .15s}
+.chip{padding:7px 12px;border-radius:20px;border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:9px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:rgba(212,168,67,.2);touch-action:manipulation;user-select:none}
 .chip:hover{border-color:var(–b3);color:var(–text)}.chip.sel{border-color:var(–green);background:rgba(0,192,122,.08);color:var(–green)}
 .pi-row{display:flex;gap:6px;align-items:center}
 .pinp{flex:1;background:var(–s2);border:1px solid var(–b1);color:var(–text);padding:7px 9px;font-family:var(–fm);font-size:11px;border-radius:var(–r2);outline:none}
@@ -276,10 +276,10 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-heigh
 .fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .fchips{display:flex;gap:6px;flex-wrap:wrap}
-.fchip{padding:6px 12px;border-radius:20px;border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:10px;cursor:pointer;transition:all .15px}
+.fchip{padding:8px 14px;border-radius:20px;border:1px solid var(–b1);background:var(–s2);color:var(–muted);font-family:var(–fm);font-size:10px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:rgba(212,168,67,.2);touch-action:manipulation;user-select:none}
 .fchip:hover{border-color:var(–b3);color:var(–text)}.fchip.sel{border-color:var(–gold);background:var(–gdim);color:var(–gold)}
 .sm-row{display:flex;gap:8px}
-.sm{flex:1;padding:14px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);cursor:pointer;transition:all .18s;text-align:center}
+.sm{flex:1;padding:14px;border-radius:var(–r2);border:1px solid var(–b1);background:var(–s2);cursor:pointer;transition:all .18s;text-align:center;-webkit-tap-highlight-color:rgba(212,168,67,.2);touch-action:manipulation;user-select:none}
 .sm:hover{border-color:var(–b3)}.sm.sel{border-color:var(–gold);background:var(–gdim)}
 .sm-ic{font-size:22px;margin-bottom:5px}.sm-t{font-family:var(–fm);font-size:10px;color:var(–text);margin-bottom:2px}
 .sm.sel .sm-t{color:var(–gold)}.sm-s{font-family:var(–fm);font-size:9px;color:var(–muted);line-height:1.4}
@@ -1034,10 +1034,10 @@ async function loadListings(){
 
 // Demo seed data shown when DB is empty or errors
 var DEMO_DATA=[
-  {id:'d1',seller_name:'Rahul M.',block:'E',tier:'lower',bay:'Bay 7',seat:'FF-198 to FF-200',qty:3,together:true,price:7500,face_value:4000,gate:'1',entry:'116-117',level:'0',perks:['shade'],view_desc:'Block E Lower, Bay 7 — east side, slightly NE. Ground-level immersive feel.',note:'Selling all 3 together. Family trip cancelled. BMS receipt available. Meet at Gate 1.',photo_verified:false,video_verified:false,whatsapp:'+91 98765 43210',contact_email:'',phone:''},
-  {id:'d2',seller_name:'Priya S.',block:'D',tier:'lower',bay:'Bay 3',seat:'Row H, 45–46',qty:2,together:true,price:9200,face_value:5000,gate:'2',entry:'98-99',level:'0',perks:['shade','food'],view_desc:'Block D Lower, Bay 3 — NW side. Top recommended section.',note:'Two together. Visa issue — cannot travel.',photo_verified:true,video_verified:true,whatsapp:'+91 91234 56789',contact_email:'priya@example.com',phone:''},
-  {id:'d3',seller_name:'Arjun K.',block:'N',tier:'upper',bay:'Bay 2',seat:'Row C, Seat 12',qty:1,together:false,price:12000,face_value:6000,gate:'3',entry:'201-202',level:'2',perks:['straight','shade'],view_desc:'Block N Upper, Bay 2 — straight-on pitch view.',note:'Single ticket. Block N Bay 2 — most sought-after angle in the stadium.',photo_verified:true,video_verified:true,whatsapp:'',contact_email:'arjun@example.com',phone:'+91 90000 11111'},
-  {id:'d4',seller_name:'Deepa N.',block:'SP',tier:'premium',bay:'South Premium East',seat:'Row B, 8–9',qty:2,together:true,price:28000,face_value:15000,gate:'3',entry:'VIP-01',level:'0',perks:['food','lounge','shade','parking'],view_desc:'South Premium East — trophy ceremony faces you directly.',note:'Trophy lift directly in front. Work emergency abroad.',photo_verified:true,video_verified:true,whatsapp:'+91 99999 88888',contact_email:'deepa@example.com',phone:''},
+  {id:'d1',seller_name:'Rahul M.',block:'E',tier:'lower',bay:'Bay 7',seat:'FF-198 to FF-200',qty:3,together:true,price:7500,face_value:4000,gate:'1',entry:'116-117',level:'0',perks:['shade'],view_desc:'Block E Lower, Bay 7 — east side, slightly NE. Ground-level immersive feel.',note:'Selling all 3 together. Family trip cancelled. BMS receipt available. Meet at Gate 1.',photo_verified:false,video_verified:false,whatsapp:'+91 98765 43210',seller_email:'',phone:''},
+  {id:'d2',seller_name:'Priya S.',block:'D',tier:'lower',bay:'Bay 3',seat:'Row H, 45–46',qty:2,together:true,price:9200,face_value:5000,gate:'2',entry:'98-99',level:'0',perks:['shade','food'],view_desc:'Block D Lower, Bay 3 — NW side. Top recommended section.',note:'Two together. Visa issue — cannot travel.',photo_verified:true,video_verified:true,whatsapp:'+91 91234 56789',seller_email:'priya@example.com',phone:''},
+  {id:'d3',seller_name:'Arjun K.',block:'N',tier:'upper',bay:'Bay 2',seat:'Row C, Seat 12',qty:1,together:false,price:12000,face_value:6000,gate:'3',entry:'201-202',level:'2',perks:['straight','shade'],view_desc:'Block N Upper, Bay 2 — straight-on pitch view.',note:'Single ticket. Block N Bay 2 — most sought-after angle in the stadium.',photo_verified:true,video_verified:true,whatsapp:'',seller_email:'arjun@example.com',phone:'+91 90000 11111'},
+  {id:'d4',seller_name:'Deepa N.',block:'SP',tier:'premium',bay:'South Premium East',seat:'Row B, 8–9',qty:2,together:true,price:28000,face_value:15000,gate:'3',entry:'VIP-01',level:'0',perks:['food','lounge','shade','parking'],view_desc:'South Premium East — trophy ceremony faces you directly.',note:'Trophy lift directly in front. Work emergency abroad.',photo_verified:true,video_verified:true,whatsapp:'+91 99999 88888',seller_email:'deepa@example.com',phone:''},
 ];
 
 function renderListings(){
@@ -1174,11 +1174,11 @@ function openMod(listing){
   // Email
   var emEl=document.getElementById('m-em');
   var emVal=document.getElementById('m-em-val');
-  if(listing.contact_email){
-    emEl.href='mailto:'+listing.contact_email+'?subject=Tikket+—+ICC+Final+Ticket+Enquiry+Block+'+encodeURIComponent(listing.block||'')+'&body=Hi%2C+I+saw+your+listing+on+Tikket.+Is+Block+'+encodeURIComponent(listing.block||'')+'+Bay+'+encodeURIComponent(listing.bay||'')+'+at+%E2%82%B9'+listing.price+'+still+available%3F';
+  if(listing.seller_email){
+    emEl.href='mailto:'+listing.seller_email+'?subject=Tikket+—+ICC+Final+Ticket+Enquiry+Block+'+encodeURIComponent(listing.block||'')+'&body=Hi%2C+I+saw+your+listing+on+Tikket.+Is+Block+'+encodeURIComponent(listing.block||'')+'+Bay+'+encodeURIComponent(listing.bay||'')+'+at+%E2%82%B9'+listing.price+'+still+available%3F';
     emEl.onclick=null;
     emEl.classList.remove('co-off');
-    emVal.textContent=listing.contact_email;
+    emVal.textContent=listing.seller_email;
   }else{emEl.classList.add('co-off');emVal.textContent='';}
 
   // Phone
@@ -1398,9 +1398,8 @@ async function publishListing(){
     var row={
       seller_id:currentUser.id,
       seller_name:currentUser.user_metadata?.name||currentUser.email,
-      seller_email:currentUser.email,
+      seller_email:sellData.em||currentUser.email,
       whatsapp:sellData.wa||null,
-      contact_email:sellData.em||currentUser.email,
       phone:sellData.ph||null,
       block:sellData.block,
       tier:tierKey,
